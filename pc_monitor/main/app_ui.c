@@ -1,4 +1,5 @@
 #include "app_ui.h"
+#include "esp_log.h"
 
 
 
@@ -670,6 +671,7 @@ static void refresh_pc_monitor(void)
 
 
     app_state_get(&st);
+    ESP_LOGI("pc_monitor", "UI: cpu=%.0f%% cpu_temp=%.0fC gpu_name=%s", st.cpu_usage, st.cpu_temp, st.gpu_name);
 
 
 
@@ -718,19 +720,17 @@ static void refresh_pc_monitor(void)
         lv_obj_set_style_text_color(s_pc_gpu_title, lv_color_hex(0x8B5CF6), 0);
         lv_bar_set_value(s_pc_gpu_bar, (int)(st.gpu_usage + 0.5f), LV_ANIM_OFF);
     } else {
-        /* No GPU - show CPU temp section with -- values */
+        /* No GPU - show CPU temp prominently */
         lv_obj_clear_flag(s_pc_gpu_title, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(s_pc_gpu_val, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(s_pc_gpu_bar, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(s_pc_gpu_temp_label, LV_OBJ_FLAG_HIDDEN);
-        snprintf(buf, sizeof(buf), "--");
-        lv_label_set_text(s_pc_gpu_val, buf);
+        lv_obj_add_flag(s_pc_gpu_temp_label, LV_OBJ_FLAG_HIDDEN);
         if (st.cpu_temp > 0) {
             snprintf(buf, sizeof(buf), "%.0f C", st.cpu_temp);
         } else {
-            snprintf(buf, sizeof(buf), "-- C");
+            snprintf(buf, sizeof(buf), "--");
         }
-        lv_label_set_text(s_pc_gpu_temp_label, buf);
+        lv_label_set_text(s_pc_gpu_val, buf);
         lv_label_set_text(s_pc_gpu_title, "CPU Temp");
         lv_obj_set_style_text_color(s_pc_gpu_title, lv_color_hex(0x60A5FA), 0);
         lv_bar_set_value(s_pc_gpu_bar, 0, LV_ANIM_OFF);

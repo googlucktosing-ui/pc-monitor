@@ -155,7 +155,7 @@ def get_cpu_temp():
             r = subprocess.run(
                 ["wmic", "/namespace:\\root\\wmi", "PATH", "MSAcpi_ThermalZoneTemperature",
                  "get", "CurrentTemperature"],
-                capture_output=True, text=True, timeout=3,
+                capture_output=True, timeout=3, encoding="utf-8", errors="replace",
                 creationflags=subprocess.CREATE_NO_WINDOW)
             for line in r.stdout.strip().splitlines():
                 line = line.strip()
@@ -171,7 +171,7 @@ def get_cpu_temp():
         if _platform.system() == "Windows":
             r = subprocess.run(
                 ["wmic", "PATH", "Win32_TemperatureProbe", "get", "CurrentReading"],
-                capture_output=True, text=True, timeout=3,
+                capture_output=True, timeout=3, encoding="utf-8", errors="replace",
                 creationflags=subprocess.CREATE_NO_WINDOW)
             for line in r.stdout.strip().splitlines():
                 line = line.strip()
@@ -265,7 +265,7 @@ def _auto_start_lhm():
     def _lhm_running():
         try:
             r = subprocess.run(["tasklist","/FI","IMAGENAME eq LibreHardwareMonitor.exe","/FO","CSV"],
-                capture_output=True,text=True,timeout=3,
+                capture_output=True,timeout=3,encoding="utf-8",errors="replace",
                 creationflags=subprocess.CREATE_NO_WINDOW)
             return "LibreHardwareMonitor" in r.stdout
         except:
@@ -294,7 +294,7 @@ def _auto_start_lhm():
         # Try to remove stale WMI registration
         try:
             subprocess.run(["winmgmt","/verifyrepository"],
-                capture_output=True,timeout=5,
+                capture_output=True,timeout=5,encoding="utf-8",errors="replace",
                 creationflags=subprocess.CREATE_NO_WINDOW)
         except:
             pass
@@ -391,7 +391,7 @@ class Collector:
 
 
 
-                    capture_output=True, text=True, timeout=3,
+                    capture_output=True, timeout=3, encoding="utf-8", errors="replace",
                     creationflags=subprocess.CREATE_NO_WINDOW,
 
 
@@ -444,7 +444,7 @@ class Collector:
 
 
 
-                    capture_output=True, text=True, timeout=3,
+                    capture_output=True, timeout=3, encoding="utf-8", errors="replace",
                     creationflags=subprocess.CREATE_NO_WINDOW,
 
 

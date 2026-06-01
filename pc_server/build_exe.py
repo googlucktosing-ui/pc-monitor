@@ -29,6 +29,10 @@ def build(console=False):
         "--hidden-import=serial.tools.list_ports",
         "--hidden-import=zeroconf",
         "--hidden-import=ifaddr",
+        "--hidden-import=win32com",
+        "--hidden-import=pythoncom",
+        "--hidden-import=pywintypes",
+        "--hidden-import=win32com.client",
     ]
     if console:
         args.remove("--noconsole")

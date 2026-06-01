@@ -26,6 +26,7 @@ static void handle_pc_data(const char *data, int len)
     GETNUM(mu,"mem_used"); GETNUM(mt,"mem_total"); GETNUM(du,"disk_used"); GETNUM(dt,"disk_total");
     GETNUM(nu,"net_up"); GETNUM(nd,"net_down");
     GETSTR(hn,"hostname"); GETSTR(cn,"cpu_name"); GETSTR(gn,"gpu_name"); GETSTR(oi,"os_info");
+    ESP_LOGI(TAG, "PC data: cpu=%.0f%% cpu_temp=%.0fC mem=%.1f/%.1fGB host=%s", cpu, cpu_temp, mu, mt, hn);
     app_state_set_pc_data(cpu,gpu,gpu_temp,cpu_temp,mu,mt,du,dt,nu,nd,hn,cn,gn,oi,true);
     cJSON_Delete(root);
 }

@@ -533,7 +533,7 @@ def _add_firewall_rule():
                 r = subprocess.run(["netsh","advfirewall","firewall","add","rule",
                     "name="+name,"dir=in","action=allow",
                     "protocol="+proto,"localport="+str(port),"profile=any"],
-                    capture_output=True,text=True,timeout=10,
+                    capture_output=True,timeout=10,encoding="utf-8",errors="replace",
                     creationflags=subprocess.CREATE_NO_WINDOW)
                 if r and r.stdout and "ok" in r.stdout.strip().lower():
                     log.info("Firewall OK: "+name)
