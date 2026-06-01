@@ -12,6 +12,7 @@
 #include "app_discovery.h"
 #include "app_pc_monitor.h"
 #include "app_serial_cfg.h"
+#include "version.h"
 
 static const char *TAG = "pc_monitor";
 
@@ -28,6 +29,7 @@ static void init_nvs(void)
 
 void app_main(void)
 {
+    ESP_LOGI("pc_monitor", "Firmware v" APP_VERSION);
     init_nvs();
     app_state_init();
     ESP_LOGI(TAG, "PC Monitor starting");

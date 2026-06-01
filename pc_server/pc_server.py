@@ -98,7 +98,14 @@ import socket
 
 
 
-__version__ = "1.0.0"
+import os as _os
+_version_file = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "VERSION")
+try:
+    with open(_version_file) as _f:
+        __version__ = _f.read().strip()
+except Exception:
+    __version__ = "1.0.0"
+del _os, _version_file, _f
 
 
 

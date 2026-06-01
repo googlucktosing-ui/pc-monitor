@@ -639,7 +639,7 @@ class TrayApp:
         except Exception:
             pass
 
-        log.info(f"TrayApp init: ws://{host}:{port} | PC IP={self._local_ip} | "
+        log.info(f"PC Monitor Tray v{__version__}: ws://{host}:{port} | PC IP={self._local_ip} | "
                  f"GPU={'yes' if use_gpu else 'no'} | UDP disc port={self.DISCOVERY_PORT}")
 
     @property
