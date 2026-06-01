@@ -726,7 +726,7 @@ static void refresh_pc_monitor(void)
         lv_obj_clear_flag(s_pc_gpu_bar, LV_OBJ_FLAG_HIDDEN);
         lv_obj_add_flag(s_pc_gpu_temp_label, LV_OBJ_FLAG_HIDDEN);
         if (st.cpu_temp > 0) {
-            snprintf(buf, sizeof(buf), "%.0f\xc2\xb0C", st.cpu_temp);
+            snprintf(buf, sizeof(buf), "%.0f\302\260C", st.cpu_temp);
         } else {
             snprintf(buf, sizeof(buf), "--");
         }
