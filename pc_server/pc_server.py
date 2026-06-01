@@ -229,7 +229,7 @@ def get_cpu_temp():
 
 def _auto_start_lhm():
     """Auto-extract and start LibreHardwareMonitor if CPU temp unavailable."""
-    import os, sys, subprocess, time, logging, zipfile, shutil
+    import os, sys, subprocess, time, logging, zipfile, shutil, ctypes
 
     if getattr(sys, "frozen", False):
         base = os.path.dirname(sys.executable)
@@ -241,6 +241,7 @@ def _auto_start_lhm():
     lhm_dir = os.path.join(base, "LibreHardwareMonitor")
     exe_path = os.path.join(lhm_dir, "LibreHardwareMonitor.exe")
 
+    # Extract if needed
     if not os.path.isfile(exe_path):
         zip_src = os.path.join(bundle_dir, "lhm.zip")
         if os.path.isfile(zip_src):
@@ -259,15 +260,46 @@ def _auto_start_lhm():
             return False
 
     log = logging.getLogger("PcMon")
-    try:
-        import win32com.client
-        wmi = win32com.client.GetObject("winmgmts:{impersonationLevel=impersonate}!\\root\\LibreHardwareMonitor")
-        _ = wmi.ExecQuery("SELECT * FROM Sensor")
-        log.info("LHM already running")
-        return True
-    except Exception:
-        pass
 
+    # Helper: check if LHM process is actually running
+    def _lhm_running():
+        try:
+            r = subprocess.run(["tasklist","/FI","IMAGENAME eq LibreHardwareMonitor.exe","/FO","CSV"],
+                capture_output=True,text=True,timeout=3,
+                creationflags=subprocess.CREATE_NO_WINDOW)
+            return "LibreHardwareMonitor" in r.stdout
+        except:
+            return False
+
+    # Helper: check if LHM WMI actually returns sensors
+    def _lhm_wmi_works():
+        try:
+            import win32com.client
+            wmi = win32com.client.GetObject(
+                "winmgmts:{impersonationLevel=impersonate}!\\root\\LibreHardwareMonitor")
+            sensors = wmi.ExecQuery("SELECT * FROM Sensor")
+            for _ in sensors:
+                return True  # at least one sensor
+            return False
+        except:
+            return False
+
+    # Check if LHM is truly running (process + WMI)
+    if _lhm_running() and _lhm_wmi_works():
+        log.info("LHM already running with valid sensors")
+        return True
+
+    # If namespace exists but no process, clean stale registration
+    if not _lhm_running():
+        # Try to remove stale WMI registration
+        try:
+            subprocess.run(["winmgmt","/verifyrepository"],
+                capture_output=True,timeout=5,
+                creationflags=subprocess.CREATE_NO_WINDOW)
+        except:
+            pass
+
+    # Start LHM - try normal first, then elevated
     log.info("Starting LibreHardwareMonitor...")
     try:
         subprocess.Popen(
@@ -275,17 +307,31 @@ def _auto_start_lhm():
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
             creationflags=subprocess.CREATE_NO_WINDOW,
         )
-        for _ in range(15):
-            time.sleep(1)
-            try:
-                wmi = win32com.client.GetObject("winmgmts:{impersonationLevel=impersonate}!\\root\\LibreHardwareMonitor")
-                _ = wmi.ExecQuery("SELECT * FROM Sensor")
-                log.info("LHM started, CPU temp available")
-                return True
-            except Exception:
-                continue
     except Exception as e:
         log.warning(f"Failed to start LHM: {e}")
+
+    # Wait for LHM to start and register WMI
+    for i in range(15):
+        time.sleep(1)
+        if _lhm_running() and _lhm_wmi_works():
+            log.info(f"LHM started, CPU temp available (took {i+1}s)")
+            return True
+
+    # If normal start failed, try elevated
+    if not _lhm_running():
+        log.info("Trying elevated start for LibreHardwareMonitor...")
+        try:
+            ctypes.windll.shell32.ShellExecuteW(
+                None, "runas", exe_path, None, None, 0)
+            for i in range(10):
+                time.sleep(1)
+                if _lhm_running() and _lhm_wmi_works():
+                    log.info(f"LHM started (elevated), CPU temp available")
+                    return True
+        except Exception as e:
+            log.warning(f"Elevated start failed: {e}")
+
+    log.warning("Failed to get LHM temperature sensors")
     return False
 
 def get_gpu():
