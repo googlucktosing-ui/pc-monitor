@@ -1,0 +1,14 @@
+﻿# Windows 换行符（CRLF）适用于 Windows 编辑
+* text=auto
+
+# C 源码保留 LF（ESP32 在 Linux VM 编译）
+*.c text eol=lf
+*.h text eol=lf
+*.py text eol=lf
+CMakeLists.txt text eol=lf
+*.mk text eol=lf
+*.csv text eol=lf
+
+# Windows 脚本保留 CRLF
+*.bat text eol=crlf
+*.vbs text eol=crlf
