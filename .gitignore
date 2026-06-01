@@ -1,0 +1,54 @@
+﻿# ===== Python / PyInstaller 构建产物 =====
+pc_server/build/
+pc_server/dist/
+pc_server/*.spec
+pc_server/**/*.pyc
+pc_server/**/__pycache__/
+pc_server/*.log
+pc_server/.pc_monitor.lock
+pc_server/lhm.zip
+pc_server/LibreHardwareMonitor/
+
+# ===== 临时/修复脚本 =====
+pc_server/_fix_*.py
+pc_server/_restore*.py
+pc_server/_build_*.py
+pc_server/do_fix.py
+pc_server/update_cfg.py
+
+# ===== ESP32 编译产物 =====
+pc_monitor/build/
+pc_monitor/build_test/
+pc_monitor/sdkconfig
+pc_monitor/sdkconfig.old
+pc_monitor/sdkconfig.defaults
+pc_monitor/sdkconfig.ci
+pc_monitor/dependencies.lock
+pc_monitor/managed_components/
+pc_monitor/.embuild/
+pc_monitor/sdkconfig.bak
+**/*.o
+**/*.d
+**/*.elf
+**/*.bin
+**/*.map
+**/*.hex
+
+# ===== 第三方组件（可从ESP组件库下载）=====
+pc_monitor/components/lvgl/
+
+# ===== 文档产物 =====
+*.doc
+*.docx
+
+# ===== IDE / 系统文件 =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ===== 开发资料 =====
+开发板资料/

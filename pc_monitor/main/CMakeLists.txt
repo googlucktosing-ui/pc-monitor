@@ -1,0 +1,27 @@
+idf_component_register(
+    SRCS 
+        main.c 
+        app_state.c 
+        app_ui.c 
+        app_wifi.c 
+        app_sensor.c 
+        app_time.c 
+        app_weather.c
+        app_pc_monitor.c
+        app_discovery.c
+        app_serial_cfg.c
+        dht11.c
+    INCLUDE_DIRS 
+        .
+    REQUIRES 
+        bsp 
+        lvgl 
+        esp_websocket_client
+        nvs_flash
+        lwip
+        esp_http_client
+        esp-tls
+        json
+        esp_netif
+        esp_wifi
+)
