@@ -105,7 +105,7 @@ try:
         __version__ = _f.read().strip()
 except Exception:
     __version__ = "1.0.0"
-del _os, _version_file, _f
+# cleanup: _os, _version_file, _f go out of scope
 
 
 

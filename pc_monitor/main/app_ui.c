@@ -725,7 +725,12 @@ static void refresh_pc_monitor(void)
         lv_obj_clear_flag(s_pc_gpu_temp_label, LV_OBJ_FLAG_HIDDEN);
         snprintf(buf, sizeof(buf), "--");
         lv_label_set_text(s_pc_gpu_val, buf);
-        lv_label_set_text(s_pc_gpu_temp_label, "N/A");
+        if (st.cpu_temp > 0) {
+            snprintf(buf, sizeof(buf), "%.0f C", st.cpu_temp);
+        } else {
+            snprintf(buf, sizeof(buf), "-- C");
+        }
+        lv_label_set_text(s_pc_gpu_temp_label, buf);
         lv_label_set_text(s_pc_gpu_title, "CPU Temp");
         lv_obj_set_style_text_color(s_pc_gpu_title, lv_color_hex(0x60A5FA), 0);
         lv_bar_set_value(s_pc_gpu_bar, 0, LV_ANIM_OFF);
