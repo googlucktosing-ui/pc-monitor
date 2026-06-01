@@ -857,10 +857,16 @@ class TrayApp:
     def _auto_start_lhm_bg():
         import time
         time.sleep(3)
-        try:
-            from pc_server import _auto_start_lhm
-            _auto_start_lhm()
-        except: pass
+        # Periodic retry: try every 30s for 3 minutes
+        for attempt in range(6):
+            try:
+                from pc_server import _auto_start_lhm
+                if _auto_start_lhm():
+                    return
+            except Exception as e:
+                pass
+            time.sleep(30)
+
 
     # -- Tray menu ------------------------------------------------------
 
@@ -991,9 +997,9 @@ class TrayApp:
             raise
 
 def check_single_instance():
-    """Ensure only one instance. Uses named mutex + lock file."""
+    """Ensure only one instance. Uses named mutex."""
     global _single_mutex_handle
-    import ctypes, sys, os, atexit
+    import ctypes, sys
     pid = os.getpid()
     try:
         kernel32 = ctypes.windll.kernel32
@@ -1003,17 +1009,7 @@ def check_single_instance():
         if err == 183:
             log.info("Another instance already running, exiting")
             sys.exit(0)
-        lock = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "PcMonitor", ".pc_monitor.lock")
-        try:
-            with open(lock, "w") as f:
-                f.write(str(pid))
-            def _cleanup():
-                try:
-                    if os.path.exists(lock): os.remove(lock)
-                except: pass
-            atexit.register(_cleanup)
-        except:
-            pass
+        # Lock file removed - mutex is sufficient
     except Exception as e:
         log.warning(f"Mutex error: {e}")
 
@@ -1024,25 +1020,6 @@ def check_single_instance():
 def main():
 
     check_single_instance()
-
-    # Lock file backup
-    import os
-    _lock = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "PcMonitor", ".pc_monitor.lock")
-    try:
-        os.makedirs(os.path.dirname(_lock), exist_ok=True)
-        if os.path.exists(_lock):
-            with open(_lock) as f:
-                old_pid = f.read().strip()
-            try:
-                os.kill(int(old_pid), 0)
-                log.info(f"Lock file PID={old_pid} still running, exiting")
-                sys.exit(0)
-            except (OSError, ValueError):
-                pass
-        with open(_lock, "w") as f:
-            f.write(str(os.getpid()))
-    except Exception as e:
-        log.warning(f"Lock file error: {e}")
 
     import argparse
 
@@ -1096,11 +1073,12 @@ def main():
 
 
 
-    TrayApp(host=a.host, port=a.port, interval=a.interval,
-
-
-
-            use_gpu=not a.no_gpu).run()
+    try:
+        TrayApp(host=a.host, port=a.port, interval=a.interval,
+                use_gpu=not a.no_gpu).run()
+    except Exception as e:
+        log.error(f"TrayApp failed: {e}", exc_info=True)
+        sys.exit(1)
 
 
 
@@ -1109,26 +1087,14 @@ def main():
 
 
 if __name__ == "__main__":
-
-
-
     try:
-
-
-
         import six  # noqa: F401
-
-
-
     except ImportError:
-
-
-
         log.warning("six not found")
-
-
-
-    main()
+    try:
+        main()
+    except Exception as e:
+        log.error(f"main() failed: {e}", exc_info=True)
 
 
 

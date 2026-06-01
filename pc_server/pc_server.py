@@ -299,37 +299,21 @@ def _auto_start_lhm():
         except:
             pass
 
-    # Start LHM - try normal first, then elevated
-    log.info("Starting LibreHardwareMonitor...")
+    # Start LHM - go straight to elevated since normal always needs admin
+    log.info("Starting LibreHardwareMonitor (elevated)...")
     try:
-        subprocess.Popen(
-            [exe_path],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-            creationflags=subprocess.CREATE_NO_WINDOW,
-        )
+        ctypes.windll.shell32.ShellExecuteW(
+            None, "runas", exe_path, None, None, 0)
+        # Wait up to 15s for LHM to start and register WMI
+        for i in range(15):
+            time.sleep(1)
+            if _lhm_running() and _lhm_wmi_works():
+                log.info(f"LHM started, CPU temp available (took {i+1}s)")
+                return True
+        log.info("LHM process started but WMI not ready yet")
+        return True  # Still return True - process started, WMI will come
     except Exception as e:
-        log.warning(f"Failed to start LHM: {e}")
-
-    # Wait for LHM to start and register WMI
-    for i in range(15):
-        time.sleep(1)
-        if _lhm_running() and _lhm_wmi_works():
-            log.info(f"LHM started, CPU temp available (took {i+1}s)")
-            return True
-
-    # If normal start failed, try elevated
-    if not _lhm_running():
-        log.info("Trying elevated start for LibreHardwareMonitor...")
-        try:
-            ctypes.windll.shell32.ShellExecuteW(
-                None, "runas", exe_path, None, None, 0)
-            for i in range(10):
-                time.sleep(1)
-                if _lhm_running() and _lhm_wmi_works():
-                    log.info(f"LHM started (elevated), CPU temp available")
-                    return True
-        except Exception as e:
-            log.warning(f"Elevated start failed: {e}")
+        log.warning(f"Elevated start failed: {e}")
 
     log.warning("Failed to get LHM temperature sensors")
     return False
