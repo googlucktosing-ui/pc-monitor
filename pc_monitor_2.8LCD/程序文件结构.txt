@@ -1,0 +1,29 @@
+全部同步完成！以下是同步的文件清单：
+
+**`E:\CODEX-Pj\ESP32\pc_monitor\`** 已更新：
+
+**`main/`** — 21 个源文件
+- `app_config.h` — 已更新为端口 **18090**
+- `app_discovery.c/h` — UDP 发现协议
+- `app_pc_monitor.c/h` — PC 数据接收
+- `app_ui.c/h` — LVGL 显示
+- `app_weather.c/h` — 天气功能
+- `app_wifi.c/h` — WiFi 连接
+- `app_sensor.c/h` — DHT11 传感器
+- `app_time.c/h` — 时间同步
+- `app_state.c/h` — 状态管理
+- `dht11.c/h` — DHT11 驱动
+- `main.c` — 主程序
+- `CMakeLists.txt` — 构建配置
+
+**`firmware/`**
+- `pc_monitor.bin` — **1.4MB** 最新编译的固件（端口 18090 ✅）
+
+**`components/`**
+- `bsp/` — 板级支持包
+- `lvgl/` — LVGL 图形库
+
+**根目录**
+- `CMakeLists.txt`, `sdkconfig`, `sdkconfig.bak`
+
+> 本地和 VM 均已更新到一致的状态。PC 监控程序当前在系统托盘运行，端口 **18090**，ESP32 已自动连接并显示数据。

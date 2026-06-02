@@ -21,7 +21,7 @@ static volatile int s_fail_count = 0;
 #define DISCOVERY_LISTEN_TIMEOUT   1500
 
 /* ---------- NVS Cache ---------- */
-static void cache_save(const char *ip, int port)
+static void cache_save(const char *ip, int32_t port)
 {
     nvs_handle_t h;
     if (nvs_open("pc_monitor", NVS_READWRITE, &h) == ESP_OK) {
@@ -32,7 +32,7 @@ static void cache_save(const char *ip, int port)
     }
 }
 
-static bool cache_load(char *ip_buf, size_t ip_len, int *port)
+static bool cache_load(char *ip_buf, size_t ip_len, int32_t *port)
 {
     nvs_handle_t h;
     if (nvs_open("pc_monitor", NVS_READONLY, &h) != ESP_OK)
@@ -70,7 +70,7 @@ static bool parse_discover(const char *str)
     char ip_buf[32];
     memcpy(ip_buf, str, ip_len);
     ip_buf[ip_len] = '\0';
-    int port = atoi(pipe + 1);
+    int32_t port = atoi(pipe + 1);
     if (port <= 0) port = APP_PC_SERVER_PORT;
 
     snprintf(s_discovered_uri, sizeof(s_discovered_uri), "ws://%s:%d", ip_buf, port);
