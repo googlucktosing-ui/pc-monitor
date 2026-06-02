@@ -1,4 +1,4 @@
-﻿#include "app_discovery.h"
+#include "app_discovery.h"
 #include "app_config.h"
 #include "esp_log.h"
 #include "esp_system.h"
@@ -8,13 +8,17 @@
 #include "lwip/netdb.h"
 #include "lwip/inet.h"
 #include <string.h>
+#include "freertos/task.h"
 #include <stdio.h>
 
 static const char *TAG = "discovery";
 static char s_discovered_uri[64] = {0};
 static volatile bool s_discovered = false;
+static volatile int s_fail_count = 0;
 
-#define MAX_FAILURES_BEFORE_CLEAR  5
+#define MAX_FAILURES_BEFORE_CLEAR  2
+#define DISCOVERY_QUERY_INTERVAL   3000
+#define DISCOVERY_LISTEN_TIMEOUT   1500
 
 /* ---------- NVS Cache ---------- */
 static void cache_save(const char *ip, int port)
@@ -52,15 +56,14 @@ static void cache_clear(void)
     ESP_LOGI(TAG, "NVS cache cleared");
 }
 
-/* ---------- Parse "IP|PORT" from string, discover PC ---------- */
+/* ---------- Parse IP|PORT from string, discover PC ---------- */
 static bool parse_discover(const char *str)
 {
     if (!str || !*str) return false;
     const char *pipe = strchr(str, '|');
     if (!pipe || pipe == str) return false;
     size_t ip_len = pipe - str;
-    if (ip_len < 7 || ip_len > 31) return false;  // "0.0.0.0" to "xxx.xxx.xxx.xxx"
-    // Check it looks like an IP (at least one dot)
+    if (ip_len < 7 || ip_len > 31) return false;
     const char *dot = (const char *)memchr(str, '.', ip_len);
     if (!dot) return false;
 
@@ -72,6 +75,7 @@ static bool parse_discover(const char *str)
 
     snprintf(s_discovered_uri, sizeof(s_discovered_uri), "ws://%s:%d", ip_buf, port);
     s_discovered = true;
+    s_fail_count = 0;
     ESP_LOGI(TAG, "Discovered PC: %s", s_discovered_uri);
     cache_save(ip_buf, port);
     return true;
@@ -90,10 +94,11 @@ static bool try_cache(void)
     return true;
 }
 
-/* ---------- Single discovery task: query + listen in one thread, one socket ---------- */
+/* perpetual discovery task - runs forever */
 static void discovery_task(void *arg)
 {
     (void)arg;
+
     int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sock < 0) {
         ESP_LOGE(TAG, "Socket creation failed");
@@ -104,6 +109,12 @@ static void discovery_task(void *arg)
     int opt = 1;
     setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
     setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt));
+
+    struct timeval tv = {
+        .tv_sec  = DISCOVERY_LISTEN_TIMEOUT / 1000,
+        .tv_usec = (DISCOVERY_LISTEN_TIMEOUT % 1000) * 1000
+    };
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
     struct sockaddr_in bind_addr = {
         .sin_family = AF_INET,
@@ -123,69 +134,60 @@ static void discovery_task(void *arg)
         .sin_addr.s_addr = htonl(INADDR_BROADCAST),
     };
 
-    ESP_LOGI(TAG, "Discovery listening on UDP %d", APP_DISCOVERY_PORT);
+    ESP_LOGI(TAG, "Perpetual discovery on UDP %d", APP_DISCOVERY_PORT);
 
     char buf[256];
     struct sockaddr_in from;
-    socklen_t from_len = sizeof(from);
-    int iter = 0;
+    socklen_t from_len;
+    TickType_t last_query = 0;
 
-    while (!s_discovered) {
-        // Send query every 3 iterations (~4.5s)
-        iter++;
-        if (iter % 3 == 0) {
-            sendto(sock, APP_DISCOVERY_QUERY, strlen(APP_DISCOVERY_QUERY), 0,
-                   (struct sockaddr *)&bcast, sizeof(bcast));
-        }
-
-        // Receive with 1.5s timeout
-        struct timeval tv = { .tv_sec = 1, .tv_usec = 500000 };
-        setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-
+    /* NEVER EXITS */
+    while (1) {
         from_len = sizeof(from);
         int len = recvfrom(sock, buf, sizeof(buf) - 1, 0,
                            (struct sockaddr *)&from, &from_len);
-        if (len <= 0) continue;
+
+        if (len < 0) {
+            /* Timeout - send periodic query */
+            TickType_t now = xTaskGetTickCount();
+            if (now - last_query >= pdMS_TO_TICKS(DISCOVERY_QUERY_INTERVAL)) {
+                last_query = now;
+                sendto(sock, APP_DISCOVERY_QUERY, strlen(APP_DISCOVERY_QUERY), 0,
+                       (struct sockaddr *)&bcast, sizeof(bcast));
+            }
+            continue;
+        }
+
         buf[len] = '\0';
 
-        size_t mlen = strlen(APP_DISCOVERY_MAGIC);  // "PC_MONITOR" = 10
+        size_t mlen = strlen(APP_DISCOVERY_MAGIC);
 
-        // Case A: PC broadcast "PC_MONITOR|IP|PORT" (magic + '|')
+        /* Case A: PC broadcast "PC_MONITOR|IP|PORT" */
         if (strncmp(buf, APP_DISCOVERY_MAGIC, mlen) == 0) {
             if (buf[mlen] == '|') {
-                if (parse_discover(buf + mlen + 1)) break;
+                parse_discover(buf + mlen + 1);
             }
-            // buf[mlen] == '_' -> "PC_MONITOR_HERE|..." (our query response)
-            // buf[mlen] == 'Q' -> "PC_MONITOR_QUERY" (our own query echo)
-            // Both cases: handled below
             continue;
         }
 
-        // Case B: PC query response "PC_MONITOR_HERE|IP|PORT"
-        size_t rlen = strlen(APP_DISCOVERY_RESP_PREFIX);  // "PC_MONITOR_HERE|"
+        /* Case B: PC query response "PC_MONITOR_HERE|IP|PORT" */
+        size_t rlen = strlen(APP_DISCOVERY_RESP_PREFIX);
         if (strncmp(buf, APP_DISCOVERY_RESP_PREFIX, rlen) == 0) {
-            if (parse_discover(buf + rlen)) break;
+            parse_discover(buf + rlen);
             continue;
         }
     }
 
-    ESP_LOGI(TAG, "Discovery OK: %s", s_discovered_uri);
+    /* unreachable */
     close(sock);
-    vTaskDelete(NULL);
 }
 
-/* ---------- Public API ---------- */
+/* -- Public API -- */
+
 void app_discovery_start(void)
 {
-    ESP_LOGI(TAG, "Starting multi-layer discovery...");
-
-    // Layer 1: NVS cache (instant)
-    if (try_cache()) {
-        ESP_LOGI(TAG, "Fast connect via NVS cache");
-        return;
-    }
-
-    // Layer 2: Full discovery
+    ESP_LOGI(TAG, "Starting perpetual discovery...");
+    try_cache();
     xTaskCreate(discovery_task, "disc", 4096, NULL, 4, NULL);
 }
 
@@ -208,12 +210,12 @@ void app_discovery_reset(void)
 
 void app_discovery_report_failure(void)
 {
-    static int fail_count = 0;
-    fail_count++;
-    ESP_LOGW(TAG, "Conn fail %d/%d", fail_count, MAX_FAILURES_BEFORE_CLEAR);
-    if (fail_count >= MAX_FAILURES_BEFORE_CLEAR) {
+    s_fail_count++;
+    ESP_LOGW(TAG, "Conn fail %d/%d", s_fail_count, MAX_FAILURES_BEFORE_CLEAR);
+    if (s_fail_count >= MAX_FAILURES_BEFORE_CLEAR) {
         cache_clear();
         app_discovery_reset();
-        fail_count = 0;
+        s_fail_count = 0;
+        ESP_LOGI(TAG, "Cache cleared, perpetual discovery active");
     }
 }

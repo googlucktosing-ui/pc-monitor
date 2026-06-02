@@ -1,4 +1,4 @@
-﻿#include "app_pc_monitor.h"
+#include "app_pc_monitor.h"
 #include "app_state.h"
 #include "app_config.h"
 #include "app_wifi.h"
@@ -60,31 +60,41 @@ static void ws_handler(void *h, esp_event_base_t b, int32_t eid, void *ed)
 static void task(void *arg)
 {
     (void)arg;
-    esp_websocket_client_config_t cfg = { .task_stack=4096, .buffer_size=2048, .reconnect_timeout_ms=3000 };
 
     while (1) {
-        // Wait for WiFi
+        /* Wait for WiFi */
         while (!app_wifi_wait_connected(30000)) { vTaskDelay(pdMS_TO_TICKS(3000)); }
         ESP_LOGI(TAG, "WiFi OK");
 
-        // Get URI: NVS cache -> discovery -> fallback
+        /* Get URI from discovery (includes NVS cache + perpetual discovery) */
         const char *uri = app_discovery_get_uri();
         if (!uri) {
-            int n = APP_DISCOVERY_TIMEOUT_MS / 500;
+            /* Wait for perpetual discovery to find PC (up to 15s) */
+            int n = 30;  /* 30 * 500ms = 15s */
+            ESP_LOGI(TAG, "Waiting for discovery...");
             while (!app_discovery_found() && --n > 0) vTaskDelay(pdMS_TO_TICKS(500));
             uri = app_discovery_get_uri();
         }
-        if (!uri) uri = APP_PC_SERVER_URI;
+        if (!uri) {
+            ESP_LOGW(TAG, "Discovery timeout, will retry in 3s");
+            vTaskDelay(pdMS_TO_TICKS(3000));
+            continue;
+        }
         ESP_LOGI(TAG, "Connect: %s", uri);
 
+        esp_websocket_client_config_t cfg = {
+            .task_stack = 4096,
+            .buffer_size = 2048,
+            .reconnect_timeout_ms = 3000,
+        };
         cfg.uri = uri;
         s_client = esp_websocket_client_init(&cfg);
         esp_websocket_register_events(s_client, WEBSOCKET_EVENT_ANY, ws_handler, NULL);
         esp_websocket_client_start(s_client);
 
-        // Wait for connection, then wait for disconnect
+        /* Wait up to 10s for connection */
         int ok_wait = 0;
-        while (ok_wait < 30) {  // up to 30*500ms = 15s to connect
+        while (ok_wait < 20) {  /* 20 * 500ms = 10s */
             vTaskDelay(pdMS_TO_TICKS(500));
             if (esp_websocket_client_is_connected(s_client)) break;
             ok_wait++;
@@ -92,23 +102,24 @@ static void task(void *arg)
 
         if (esp_websocket_client_is_connected(s_client)) {
             ESP_LOGI(TAG, "WebSocket connected, monitoring...");
+            /* Connected: monitor until disconnect */
             while (1) {
                 vTaskDelay(pdMS_TO_TICKS(5000));
                 if (!esp_websocket_client_is_connected(s_client)) {
-                    ESP_LOGI(TAG, "Lost connection, will rediscover");
-                    app_discovery_report_failure();
+                    ESP_LOGI(TAG, "Lost connection, immediately rediscovering");
+                    /* On disconnect: immediately reset discovery so perpetual task finds new IP */
+                    app_discovery_reset();
                     break;
                 }
             }
         } else {
-            ESP_LOGW(TAG, "Failed to connect WebSocket");
+            ESP_LOGW(TAG, "WebSocket connect failed");
             app_discovery_report_failure();
-            vTaskDelay(pdMS_TO_TICKS(5000));
+            vTaskDelay(pdMS_TO_TICKS(1000));  /* Shorter retry delay */
         }
 
         esp_websocket_client_destroy(s_client);
         s_client = NULL;
-        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 

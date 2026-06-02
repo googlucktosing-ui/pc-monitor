@@ -608,7 +608,7 @@ class TrayApp:
     """System tray application with WebSocket server + mDNS + UDP discovery."""
 
     DISCOVERY_PORT = 54789
-    DISCOVERY_INTERVAL = 2
+    DISCOVERY_INTERVAL = 1
 
     def __init__(self, host="0.0.0.0", port=18090, interval=1.0, use_gpu=True):
         self.host = host
@@ -672,7 +672,17 @@ class TrayApp:
         while not self._stop_ev.is_set():
             payload = f"{UDP_DISC_MAGIC}|{self._local_ip}|{self.port}"
             try:
+                # 1. Global broadcast (may be blocked by some routers)
                 self._disc_sock.sendto(payload.encode("utf-8"), ("255.255.255.255", self.DISCOVERY_PORT))
+                # 2. Subnet broadcast (more reliable on some routers)
+                parts = self._local_ip.rsplit(".", 1)
+                if len(parts) == 2:
+                    subnet_bcast = f"{parts[0]}.255"
+                    self._disc_sock.sendto(payload.encode("utf-8"), (subnet_bcast, self.DISCOVERY_PORT))
+                # 3. Direct unicast to common gateway (covers many small networks)
+                if len(parts) == 2:
+                    gateway = f"{parts[0]}.1"
+                    self._disc_sock.sendto(payload.encode("utf-8"), (gateway, self.DISCOVERY_PORT))
                 self._discovery_addr = f"{self._local_ip}:{self.port}"
                 self._sync_icon()
                 time.sleep(self.DISCOVERY_INTERVAL)
@@ -748,6 +758,12 @@ class TrayApp:
                         resp = UDP_QUERY_RESP.format(self._local_ip, self.port)
                         sock.sendto(resp.encode("utf-8"), (addr[0], self.DISCOVERY_PORT))
                         log.info(f"Responded: {self._local_ip}:{self.port}")
+                    elif len(msg) > 0 and not msg.startswith("PC_MONITOR"):
+                        # Fallback: respond to ANY unknown UDP on this port
+                        # ESP32 might send raw packets to discover PC
+                        log.info(f"Unknown UDP from {addr[0]}:{addr[1]} -> {msg[:32]}")
+                        resp = UDP_QUERY_RESP.format(self._local_ip, self.port)
+                        sock.sendto(resp.encode("utf-8"), (addr[0], self.DISCOVERY_PORT))
                 except socket.timeout:
                     continue
                 except Exception as e:
@@ -997,9 +1013,9 @@ class TrayApp:
             raise
 
 def check_single_instance():
-    """Ensure only one instance. Uses named mutex."""
+    """Ensure only one instance. Uses named mutex + PID lock."""
     global _single_mutex_handle
-    import ctypes, sys
+    import ctypes, sys, os, atexit
     pid = os.getpid()
     try:
         kernel32 = ctypes.windll.kernel32
@@ -1009,13 +1025,49 @@ def check_single_instance():
         if err == 183:
             log.info("Another instance already running, exiting")
             sys.exit(0)
-        # Lock file removed - mutex is sufficient
+        # Keep handle alive - create a strong reference to prevent GC
+        # Also write a PID file as backup lock
+        lock_dir = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "PcMonitor")
+        os.makedirs(lock_dir, exist_ok=True)
+        lock_file = os.path.join(lock_dir, ".pc_monitor.pid")
+        try:
+            # Check if old PID is still alive
+            if os.path.exists(lock_file):
+                with open(lock_file, "r") as f:
+                    old_pid = f.read().strip()
+                if old_pid:
+                    old_pid = int(old_pid)
+                    # Check if process with old PID exists
+                    try:
+                        os.kill(old_pid, 0)  # signal 0 = test existence
+                        log.info(f"Old instance PID={old_pid} still alive, exiting")
+                        sys.exit(0)
+                    except (OSError, ProcessLookupError):
+                        pass  # Old process died, we can proceed
+            # Write our PID
+            with open(lock_file, "w") as f:
+                f.write(str(pid))
+        except:
+            pass
+        # Register cleanup
+        def _cleanup_lock():
+            try:
+                try:
+                    kernel32.CloseHandle(_single_mutex_handle)
+                except:
+                    pass
+                if os.path.exists(lock_file):
+                    try:
+                        with open(lock_file, "r") as f:
+                            if f.read().strip() == str(pid):
+                                os.remove(lock_file)
+                    except:
+                        pass
+            except:
+                pass
+        atexit.register(_cleanup_lock)
     except Exception as e:
         log.warning(f"Mutex error: {e}")
-
-
-
-
 
 def main():
 
