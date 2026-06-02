@@ -1,0 +1,15 @@
+idf_component_register(
+    SRCS
+       "lv_port.c"
+       "st7789_driver.c"
+       "cst816t_driver.c"
+    INCLUDE_DIRS
+        "."
+        "../../main"
+    REQUIRES
+        esp_timer
+        esp_lcd
+        driver
+        heap
+        esp_system
+        lvgl)
