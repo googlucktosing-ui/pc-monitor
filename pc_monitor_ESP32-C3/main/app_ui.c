@@ -98,8 +98,6 @@ static lv_obj_t *s_pc_cpu_bar;
 
 static lv_obj_t *s_pc_gpu_val;
 
-static lv_obj_t *s_pc_gpu_bar;
-
 static lv_obj_t *s_pc_gpu_temp_label;
 
 static lv_obj_t *s_pc_gpu_title;
@@ -115,6 +113,7 @@ static lv_obj_t *s_pc_disk_label;
 static lv_obj_t *s_pc_disk_bar;
 
 static lv_obj_t *s_pc_net_label;
+static lv_obj_t *s_pc_dht11_label;
 
 /* 锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋
 
@@ -496,13 +495,13 @@ static void create_pc_monitor_ui(lv_obj_t *parent)
 
     lv_obj_set_style_text_font(s_pc_cpu_val, &lv_font_montserrat_28, 0);
 
-    lv_obj_align(s_pc_cpu_val, LV_ALIGN_BOTTOM_RIGHT, -8, -6);
+    lv_obj_align(s_pc_cpu_val, LV_ALIGN_TOP_RIGHT, -8, 30);
 
 
 
     lv_obj_t *cpu_bar_full = lv_bar_create(cpu_card);
 
-    lv_obj_set_size(cpu_bar_full, 116, 8);
+    lv_obj_set_size(cpu_bar_full, 94, 8);
 
     lv_obj_set_style_bg_color(cpu_bar_full, lv_color_hex(0x334155), 0);
 
@@ -572,20 +571,7 @@ static void create_pc_monitor_ui(lv_obj_t *parent)
 
 
 
-    lv_obj_t *gpu_bar_full = lv_bar_create(gpu_card);
-
-    lv_obj_set_size(gpu_bar_full, 116, 8);
-
-    lv_obj_set_style_bg_color(gpu_bar_full, lv_color_hex(0x334155), 0);
-
-    lv_obj_set_style_bg_color(gpu_bar_full, CLR_GPU, LV_PART_INDICATOR);
-
-    lv_bar_set_range(gpu_bar_full, 0, 100);
-
-    lv_obj_align(gpu_bar_full, LV_ALIGN_BOTTOM_LEFT, 8, -12);
-
-    s_pc_gpu_bar = gpu_bar_full;
-
+    
 
 
     /* 锟斤拷锟斤拷 Memory section 锟斤拷锟斤拷 */
@@ -628,14 +614,21 @@ static void create_pc_monitor_ui(lv_obj_t *parent)
 
     s_pc_net_label = lv_label_create(parent);
 
-    lv_label_set_text(s_pc_net_label, "Net  \25\200 -- KB/s  \25\214 -- KB/s");
+    lv_label_set_text(s_pc_net_label, "Net  \xEF\x82\x93 -- KB/s  \xEF\x80\x99 -- KB/s");
 
     lv_obj_set_style_text_color(s_pc_net_label, CLR_MUTED, 0);
 
     lv_obj_set_style_text_font(s_pc_net_label, &lv_font_montserrat_14, 0);
 
-    lv_obj_align(s_pc_net_label, LV_ALIGN_BOTTOM_LEFT, 10, -18);
+    lv_obj_align(s_pc_net_label, LV_ALIGN_BOTTOM_LEFT, 10, -6);
 
+
+    /* DHT11 on bottom right */
+    s_pc_dht11_label = lv_label_create(parent);
+    lv_label_set_text(s_pc_dht11_label, "--.-C --%");
+    lv_obj_set_style_text_color(s_pc_dht11_label, CLR_MUTED, 0);
+    lv_obj_set_style_text_font(s_pc_dht11_label, &lv_font_montserrat_14, 0);
+    lv_obj_align(s_pc_dht11_label, LV_ALIGN_BOTTOM_LEFT, 10, -22);
 
 
     
@@ -690,7 +683,7 @@ static void refresh_pc_monitor(void)
         /* GPU detected - show GPU data */
         lv_obj_clear_flag(s_pc_gpu_title, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(s_pc_gpu_val, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(s_pc_gpu_bar, LV_OBJ_FLAG_HIDDEN);
+        
         lv_obj_clear_flag(s_pc_gpu_temp_label, LV_OBJ_FLAG_HIDDEN);
         snprintf(buf, sizeof(buf), "%.0f%%", st.gpu_usage);
         lv_label_set_text(s_pc_gpu_val, buf);
@@ -702,12 +695,11 @@ static void refresh_pc_monitor(void)
         lv_label_set_text(s_pc_gpu_temp_label, buf);
         lv_label_set_text(s_pc_gpu_title, "GPU");
         lv_obj_set_style_text_color(s_pc_gpu_title, lv_color_hex(0x8B5CF6), 0);
-        lv_bar_set_value(s_pc_gpu_bar, (int)(st.gpu_usage + 0.5f), LV_ANIM_OFF);
-    } else {
+            } else {
         /* No GPU - show CPU temp prominently */
         lv_obj_clear_flag(s_pc_gpu_title, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(s_pc_gpu_val, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(s_pc_gpu_bar, LV_OBJ_FLAG_HIDDEN);
+        
         lv_obj_add_flag(s_pc_gpu_temp_label, LV_OBJ_FLAG_HIDDEN);
         if (st.cpu_temp > 0) {
             snprintf(buf, sizeof(buf), "%.0f\302\260C", st.cpu_temp);
@@ -717,8 +709,7 @@ static void refresh_pc_monitor(void)
         lv_label_set_text(s_pc_gpu_val, buf);
         lv_label_set_text(s_pc_gpu_title, "CPU Temp");
         lv_obj_set_style_text_color(s_pc_gpu_title, lv_color_hex(0x60A5FA), 0);
-        lv_bar_set_value(s_pc_gpu_bar, 0, LV_ANIM_OFF);
-    }
+            }
 
     /* Memory */
 
@@ -772,31 +763,26 @@ static void refresh_pc_monitor(void)
 
     if (st.pc_connected) {
 
-        snprintf(buf, sizeof(buf), "Net  \25\200 %.0f KB/s  \25\214 %.0f KB/s",
+        snprintf(buf, sizeof(buf), "Net  \xEF\x82\x93 %.0f KB/s  \xEF\x80\x99 %.0f KB/s",
 
                  st.net_up, st.net_down);
 
     } else {
 
-        snprintf(buf, sizeof(buf), "Net  \25\200 -- KB/s  \25\214 -- KB/s");
+        snprintf(buf, sizeof(buf), "Net  \xEF\x82\x93 -- KB/s  \xEF\x80\x99 -- KB/s");
 
     }
 
     lv_label_set_text(s_pc_net_label, buf);
-    /* Append DHT11 temp/humidity to same line */
+    /* DHT11 on separate right-aligned label */
     if (st.sensor_valid) {
-        char temp_buf[24];
-        snprintf(temp_buf, sizeof(temp_buf), "  |  %d.%dC %d%%", st.indoor_temp_x10 / 10, st.indoor_temp_x10 % 10, st.indoor_hum);
-        strncat(buf, temp_buf, sizeof(buf) - strlen(buf) - 1);
-        lv_label_set_text(s_pc_net_label, buf);
+        char tmp[24];
+        snprintf(tmp, sizeof(tmp), "%d.%dC %d%%", st.indoor_temp_x10 / 10, st.indoor_temp_x10 % 10, st.indoor_hum);
+        lv_label_set_text(s_pc_dht11_label, tmp);
+    } else {
+        lv_label_set_text(s_pc_dht11_label, "--.-C --%");
     }
-
-
-
-    
-
 }
-
 
 
 
