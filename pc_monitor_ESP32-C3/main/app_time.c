@@ -1,4 +1,4 @@
-#include "app_time.h"
+﻿#include "app_time.h"
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -83,5 +83,5 @@ static void time_task(void *arg)
 
 void app_time_start(void)
 {
-    xTaskCreatePinnedToCore(time_task, "time_task", 4096, NULL, 3, NULL, 1);
+    xTaskCreatePinnedToCore(time_task, "time_task", 4096, NULL, 3, NULL, 0);
 }

@@ -1,7 +1,7 @@
 ﻿idf_component_register(
     SRCS
        "lv_port.c"
-       "ili9341_driver.c"
+       "st7789_driver.c"
     INCLUDE_DIRS
         "."
         "../../main"

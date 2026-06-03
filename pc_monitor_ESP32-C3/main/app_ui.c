@@ -1,4 +1,4 @@
-#include "app_ui.h"
+﻿#include "app_ui.h"
 #include "esp_log.h"
 
 
@@ -15,7 +15,7 @@
 
 #include "lv_port.h"
 
-#include "ili9341_driver.h"
+#include "st7789_driver.h"
 
 #include "app_config.h"
 
@@ -23,15 +23,15 @@
 
 
 
-/* ���� Screen dimensions ���� */
+/* 锟斤拷锟斤拷 Screen dimensions 锟斤拷锟斤拷 */
 
-#define SCR_W 320
+#define SCR_W 240
 
 #define SCR_H 240
 
 
 
-/* ���� Color palette ���� */
+/* 锟斤拷锟斤拷 Color palette 锟斤拷锟斤拷 */
 
 #define CLR_BG       lv_color_hex(0x0F172A)
 
@@ -63,7 +63,7 @@
 
 
 
-/* ���� Weather Clock widgets ���� */
+/* 锟斤拷锟斤拷 Weather Clock widgets 锟斤拷锟斤拷 */
 
 static lv_obj_t *s_wc_cont;           /* container for whole weather clock */
 
@@ -82,7 +82,7 @@ static lv_obj_t *s_wc_weather;
 
 
 
-/* ���� PC Monitor widgets ���� */
+/* 锟斤拷锟斤拷 PC Monitor widgets 锟斤拷锟斤拷 */
 
 static lv_obj_t *s_pc_cont;           /* container for whole PC monitor */
 
@@ -116,17 +116,11 @@ static lv_obj_t *s_pc_disk_bar;
 
 static lv_obj_t *s_pc_net_label;
 
-static lv_obj_t *s_pc_bottom_label;
+/* 锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋
 
+   锟斤拷锟斤拷 Weather Clock UI 锟斤拷锟斤拷
 
-
-
-
-/* �T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T
-
-   ���� Weather Clock UI ����
-
-   �T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T */
+   锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋 */
 
 
 
@@ -180,7 +174,7 @@ static void create_weather_clock_ui(lv_obj_t *parent)
 
     lv_obj_t *line = lv_obj_create(parent);
 
-    lv_obj_set_size(line, 244, 2);
+    lv_obj_set_size(line, 200, 2);
 
     lv_obj_set_style_bg_color(line, lv_color_hex(0x374151), 0);
 
@@ -260,7 +254,7 @@ static void refresh_weather_clock(void)
 
     app_state_t st;
 
-    char buf[64];
+    char buf[128];
 
 
 
@@ -344,11 +338,11 @@ static void refresh_weather_clock(void)
 
 
 
-/* �T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T
+/* 锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋
 
-   ���� PC Monitor UI ����
+   锟斤拷锟斤拷 PC Monitor UI 锟斤拷锟斤拷
 
-   �T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T */
+   锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋 */
 
 
 
@@ -404,7 +398,7 @@ static void create_pc_monitor_ui(lv_obj_t *parent)
 
 {
 
-    /* ���� Top bar: time ���� */
+    /* 锟斤拷锟斤拷 Top bar: time 锟斤拷锟斤拷 */
 
     s_pc_time_label = lv_label_create(parent);
 
@@ -420,7 +414,7 @@ static void create_pc_monitor_ui(lv_obj_t *parent)
 
     /* Status dots */
 
-    s_pc_wifi_dot = status_dot_create(parent, 228, 14);
+    s_pc_wifi_dot = status_dot_create(parent, 178, 14);
 
     lv_obj_t *wifi_lbl = lv_label_create(parent);
 
@@ -434,7 +428,7 @@ static void create_pc_monitor_ui(lv_obj_t *parent)
 
 
 
-    s_pc_pc_dot = status_dot_create(parent, 228, 30);
+    s_pc_pc_dot = status_dot_create(parent, 178, 30);
 
     lv_obj_t *pc_lbl = lv_label_create(parent);
 
@@ -448,11 +442,11 @@ static void create_pc_monitor_ui(lv_obj_t *parent)
 
 
 
-    /* ���� Divider line ���� */
+    /* 锟斤拷锟斤拷 Divider line 锟斤拷锟斤拷 */
 
     lv_obj_t *line = lv_obj_create(parent);
 
-    lv_obj_set_size(line, 264, 1);
+    lv_obj_set_size(line, 220, 1);
 
     lv_obj_set_style_bg_color(line, CLR_LINE, 0);
 
@@ -464,11 +458,11 @@ static void create_pc_monitor_ui(lv_obj_t *parent)
 
 
 
-    /* ���� CPU Card ���� */
+    /* 锟斤拷锟斤拷 CPU Card 锟斤拷锟斤拷 */
 
     lv_obj_t *cpu_card = lv_obj_create(parent);
 
-    lv_obj_set_size(cpu_card, 132, 80);
+    lv_obj_set_size(cpu_card, 110, 80);
 
     lv_obj_set_style_bg_color(cpu_card, CLR_CARD_BG, 0);
 
@@ -522,11 +516,11 @@ static void create_pc_monitor_ui(lv_obj_t *parent)
 
 
 
-    /* ���� GPU Card ���� */
+    /* 锟斤拷锟斤拷 GPU Card 锟斤拷锟斤拷 */
 
     lv_obj_t *gpu_card = lv_obj_create(parent);
 
-    lv_obj_set_size(gpu_card, 132, 80);
+    lv_obj_set_size(gpu_card, 110, 80);
 
     lv_obj_set_style_bg_color(gpu_card, CLR_CARD_BG, 0);
 
@@ -594,7 +588,7 @@ static void create_pc_monitor_ui(lv_obj_t *parent)
 
 
 
-    /* ���� Memory section ���� */
+    /* 锟斤拷锟斤拷 Memory section 锟斤拷锟斤拷 */
 
     s_pc_mem_label = lv_label_create(parent);
 
@@ -608,11 +602,11 @@ static void create_pc_monitor_ui(lv_obj_t *parent)
 
 
 
-    s_pc_mem_bar = compact_bar_create(parent, 10, 158, 260, CLR_MEM);
+    s_pc_mem_bar = compact_bar_create(parent, 10, 158, 220, CLR_MEM);
 
 
 
-    /* ���� Disk section ���� */
+    /* 锟斤拷锟斤拷 Disk section 锟斤拷锟斤拷 */
 
     s_pc_disk_label = lv_label_create(parent);
 
@@ -626,11 +620,11 @@ static void create_pc_monitor_ui(lv_obj_t *parent)
 
 
 
-    s_pc_disk_bar = compact_bar_create(parent, 10, 190, 260, CLR_DISK);
+    s_pc_disk_bar = compact_bar_create(parent, 10, 190, 220, CLR_DISK);
 
 
 
-    /* ���� Network ���� */
+    /* 锟斤拷锟斤拷 Network 锟斤拷锟斤拷 */
 
     s_pc_net_label = lv_label_create(parent);
 
@@ -644,17 +638,7 @@ static void create_pc_monitor_ui(lv_obj_t *parent)
 
 
 
-    /* ���� Bottom hostname ���� */
-
-    s_pc_bottom_label = lv_label_create(parent);
-
-    lv_label_set_text(s_pc_bottom_label, "Discovering PC...");
-
-    lv_obj_set_style_text_color(s_pc_bottom_label, CLR_MUTED, 0);
-
-    lv_obj_set_style_text_font(s_pc_bottom_label, &lv_font_montserrat_14, 0);
-
-    lv_obj_align(s_pc_bottom_label, LV_ALIGN_BOTTOM_RIGHT, -10, -18);
+    
 
 }
 
@@ -666,7 +650,7 @@ static void refresh_pc_monitor(void)
 
     app_state_t st;
 
-    char buf[64];
+    char buf[128];
 
 
 
@@ -799,44 +783,17 @@ static void refresh_pc_monitor(void)
     }
 
     lv_label_set_text(s_pc_net_label, buf);
-
-
-
-    /* Bottom: hostname + OS / sensor bonus */
-
-    if (st.pc_connected) {
-
-        snprintf(buf, sizeof(buf), "%s  %s", st.hostname, st.os_info);
-
-    } else if (st.wifi_connected) {
-
-        snprintf(buf, sizeof(buf), "Waiting for PC server...");
-
-    } else {
-
-        snprintf(buf, sizeof(buf), "WiFi connecting...");
-
-    }
-
-
-
-    /* Append indoor temp if sensor is valid */
-
+    /* Append DHT11 temp/humidity to same line */
     if (st.sensor_valid) {
-
-        char temp_buf[16];
-
-        snprintf(temp_buf, sizeof(temp_buf), "  |  %d.%dC %d%%",
-
-                 st.indoor_temp_x10 / 10, st.indoor_temp_x10 % 10, st.indoor_hum);
-
+        char temp_buf[24];
+        snprintf(temp_buf, sizeof(temp_buf), "  |  %d.%dC %d%%", st.indoor_temp_x10 / 10, st.indoor_temp_x10 % 10, st.indoor_hum);
         strncat(buf, temp_buf, sizeof(buf) - strlen(buf) - 1);
-
+        lv_label_set_text(s_pc_net_label, buf);
     }
 
 
 
-    lv_label_set_text(s_pc_bottom_label, buf);
+    
 
 }
 
@@ -844,11 +801,11 @@ static void refresh_pc_monitor(void)
 
 
 
-/* �T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T
+/* 锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋
 
-   ���� Mode switching & main UI task ����
+   锟斤拷锟斤拷 Mode switching & main UI task 锟斤拷锟斤拷
 
-   �T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T */
+   锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋 */
 
 
 
@@ -974,7 +931,7 @@ static void ui_task(void *arg)
 
     lv_port_init();
 
-    ili9341_lcd_backlight(true);
+    st7789_lcd_backlight(true);
 
     create_ui();
 

@@ -6,12 +6,12 @@
 #include "driver/gpio.h"
 #include "lv_port.h"
 #include "lvgl.h"
-#include "ili9341_driver.h"
+#include "st7789_driver.h"
 
 static lv_disp_drv_t disp_drv;
 static const char *TAG = "lv_port";
 
-#define LCD_WIDTH   320
+#define LCD_WIDTH   240
 #define LCD_HEIGHT  240
 
 static void lv_tick_inc_cb(void *data)
@@ -28,7 +28,7 @@ static void lv_port_flush_ready(void *param)
 static void disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p)
 {
     (void)disp_drv;
-    ili9341_flush(area->x1, area->x2 + 1, area->y1, area->y2 + 1, color_p);
+    st7789_flush(area->x1, area->x2 + 1, area->y1, area->y2 + 1, color_p);
 }
 
 static void lv_port_disp_init(void)
@@ -72,21 +72,21 @@ static void lv_port_tick_init(void)
 
 static void lcd_init(void)
 {
-    ili9341_cfg_t cfg;
+    st7789_cfg_t cfg;
     cfg.mosi = GPIO_NUM_6;
     cfg.clk  = GPIO_NUM_7;
     cfg.cs   = GPIO_NUM_5;
     cfg.dc   = GPIO_NUM_4;
-    cfg.rst  = GPIO_NUM_21;
+    cfg.rst  = GPIO_NUM_10;
     cfg.bl   = GPIO_NUM_2;
     cfg.spi_fre = 40 * 1000 * 1000;
     cfg.width   = LCD_WIDTH;
     cfg.height  = LCD_HEIGHT;
-    cfg.spin    = 1;                   /* 90° rotation for landscape */
+    cfg.spin    = 0;                   /* 0=portrait, 240x240 */
     cfg.done_cb = lv_port_flush_ready;
     cfg.cb_param = &disp_drv;
 
-    ili9341_driver_hw_init(&cfg);
+    st7789_driver_hw_init(&cfg);
 }
 
 esp_err_t lv_port_init(void)

@@ -131,6 +131,6 @@ static void weather_task(void *arg)
 
 void app_weather_start(void)
 {
-    xTaskCreatePinnedToCore(weather_task, "weather_task", 6144, NULL, 3, NULL, 1);
+    xTaskCreatePinnedToCore(weather_task, "weather_task", 6144, NULL, 3, NULL, 0);
 }
 

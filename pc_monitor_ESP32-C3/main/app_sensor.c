@@ -62,5 +62,5 @@ static void sensor_task(void *arg)
 
 void app_sensor_start(void)
 {
-    xTaskCreatePinnedToCore(sensor_task, "sensor_task", 4096, NULL, 4, NULL, 1);
+    xTaskCreatePinnedToCore(sensor_task, "sensor_task", 4096, NULL, 4, NULL, 0);
 }
