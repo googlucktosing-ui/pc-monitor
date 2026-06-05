@@ -845,7 +845,7 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_label_set_text(s_pc_net_label, "GPU--%");
     lv_obj_set_style_text_color(s_pc_net_label, lv_color_hex(0x9E9E9E), 0);
     lv_obj_set_style_text_font(s_pc_net_label, &lv_font_montserrat_14, 0);
-    lv_obj_align(s_pc_net_label, LV_ALIGN_TOP_LEFT, 8, 62);
+    lv_obj_align(s_pc_net_label, LV_ALIGN_TOP_LEFT, 8, 54);
 
     lv_obj_t *cpu_card = lv_obj_create(parent);
     lv_obj_set_size(cpu_card, 115, 84);
@@ -913,10 +913,8 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     s_pc_gpu_temp_label = lv_label_create(ram_card);
     lv_label_set_text(s_pc_gpu_temp_label, "--%");
     lv_obj_set_style_text_color(s_pc_gpu_temp_label, lv_color_hex(0x00FFCC), 0);
-    lv_obj_set_style_text_font(s_pc_gpu_temp_label, &lv_font_montserrat_18, 0);
-    lv_obj_align(s_pc_gpu_temp_label, LV_ALIGN_TOP_MID, 0, 32);
-    s_pc_mem_bar = compact_bar_create(ram_card, 6, 76, 70, lv_color_hex(0x00FFCC));
-    lv_obj_set_height(s_pc_mem_bar, 14);
+    lv_obj_set_style_text_font(s_pc_gpu_temp_label, &lv_font_montserrat_28, 0);
+    lv_obj_align(s_pc_gpu_temp_label, LV_ALIGN_TOP_MID, 0, 42);
 
     /* CPU CLOCK card (right) */
     lv_obj_t *clk_card = lv_obj_create(parent);
@@ -942,7 +940,7 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_label_set_text(mhz_lbl, "MHz");
     lv_obj_set_style_text_color(mhz_lbl, lv_color_hex(0x9E9E9E), 0);
     lv_obj_set_style_text_font(mhz_lbl, &lv_font_montserrat_14, 0);
-    lv_obj_align_to(mhz_lbl, s_pc_disk_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 1);
+    lv_obj_align_to(mhz_lbl, s_pc_disk_label, LV_ALIGN_OUT_BOTTOM_LEFT, 6, 1);
 
     /* === Bottom bar: single row, compact labels === */
     lv_obj_t *bot_card = lv_obj_create(parent);
@@ -952,22 +950,28 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_obj_set_style_radius(bot_card, 3, 0);
     lv_obj_set_style_pad_all(bot_card, 0, 0);
     lv_obj_align(bot_card, LV_ALIGN_TOP_LEFT, 5, 202);
-    /* Left half (50%): GPU centered */
+    /* Left half: GPU label (gray) + value (cyan) */
+    lv_obj_t *gpu_lbl = lv_label_create(bot_card);
+    lv_label_set_text(gpu_lbl, "GPU:");
+    lv_obj_set_style_text_color(gpu_lbl, lv_color_hex(0x9E9E9E), 0);
+    lv_obj_set_style_text_font(gpu_lbl, &lv_font_montserrat_14, 0);
+    lv_obj_align(gpu_lbl, LV_ALIGN_TOP_LEFT, 17, 10);
     s_pc_cpu_bar = lv_label_create(bot_card);
-    lv_label_set_text(s_pc_cpu_bar, "GPU:-- MHz");
-    lv_obj_set_style_text_color(s_pc_cpu_bar, lv_color_hex(0xFFFFFF), 0);
+    lv_label_set_text(s_pc_cpu_bar, "-- MHz");
+    lv_obj_set_style_text_color(s_pc_cpu_bar, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_cpu_bar, &lv_font_montserrat_14, 0);
-    lv_obj_set_width(s_pc_cpu_bar, 115);
-    lv_obj_set_style_text_align(s_pc_cpu_bar, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(s_pc_cpu_bar, LV_ALIGN_TOP_LEFT, 0, 10);
-    /* Right half (50%): FAN centered */
+    lv_obj_align_to(s_pc_cpu_bar, gpu_lbl, LV_ALIGN_OUT_RIGHT_MID, 2, 0);
+    /* Right half: FAN label (gray) + value (cyan) */
+    lv_obj_t *fan_lbl = lv_label_create(bot_card);
+    lv_label_set_text(fan_lbl, "FAN:");
+    lv_obj_set_style_text_color(fan_lbl, lv_color_hex(0x9E9E9E), 0);
+    lv_obj_set_style_text_font(fan_lbl, &lv_font_montserrat_14, 0);
+    lv_obj_align(fan_lbl, LV_ALIGN_TOP_LEFT, 124, 10);
     s_pc_dht11_label = lv_label_create(bot_card);
-    lv_label_set_text(s_pc_dht11_label, "FAN:---- RPM");
+    lv_label_set_text(s_pc_dht11_label, "---- RPM");
     lv_obj_set_style_text_color(s_pc_dht11_label, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_dht11_label, &lv_font_montserrat_14, 0);
-    lv_obj_set_width(s_pc_dht11_label, 115);
-    lv_obj_set_style_text_align(s_pc_dht11_label, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(s_pc_dht11_label, LV_ALIGN_TOP_LEFT, 115, 10);
+    lv_obj_align_to(s_pc_dht11_label, fan_lbl, LV_ALIGN_OUT_RIGHT_MID, 2, 0);
 }
 
 
@@ -999,25 +1003,24 @@ static void refresh_pc_monitor_hud(void)
     if (st.mem_total > 0) {
         int pct = (int)((st.mem_used/st.mem_total*100)+0.5f);
         snprintf(buf, sizeof(buf), "%d%%", pct);
-        lv_bar_set_value(s_pc_mem_bar, pct, LV_ANIM_OFF);
-    } else { snprintf(buf, sizeof(buf), "--%%"); lv_bar_set_value(s_pc_mem_bar, 0, LV_ANIM_OFF); }
+    } else { snprintf(buf, sizeof(buf), "--%%"); }
     lv_label_set_text(s_pc_gpu_temp_label, buf);
 
     /* CPU CLOCK: value only (MHz is a separate label below) */
     float approx_mhz = 800.0f + (st.cpu_usage / 100.0f) * 3200.0f;
     snprintf(buf, sizeof(buf), "%.0f", approx_mhz);
     lv_label_set_text(s_pc_disk_label, buf);
-    /* Bottom bar: GPU: combined */
+    /* Bottom bar: GPU value only (label separate) */
     if (st.pc_connected && st.gpu_name[0]!=0 && st.gpu_name[0]!='-') {
         float gclk = 800.0f + (st.gpu_usage / 100.0f) * 1200.0f;
-        snprintf(buf, sizeof(buf), "GPU:%.0f MHz", gclk);
-    } else { snprintf(buf, sizeof(buf), "GPU:-- MHz"); }
+        snprintf(buf, sizeof(buf), "%.0f MHz", gclk);
+    } else { snprintf(buf, sizeof(buf), "-- MHz"); }
     lv_label_set_text(s_pc_cpu_bar, buf);
-    /* Bottom bar: FAN: combined */
+    /* Bottom bar: FAN value only (label separate) */
     if (st.cpu_temp > 0) {
         float rpm = 800.0f + (st.cpu_temp / 100.0f) * 2000.0f;
-        snprintf(buf, sizeof(buf), "FAN:%.0f RPM", rpm);
-    } else { snprintf(buf, sizeof(buf), "FAN:---- RPM"); }
+        snprintf(buf, sizeof(buf), "%.0f RPM", rpm);
+    } else { snprintf(buf, sizeof(buf), "---- RPM"); }
     lv_label_set_text(s_pc_dht11_label, buf);
     /* Top bar left: DHT11 data */
     if (st.sensor_valid) snprintf(buf, sizeof(buf), "%d.%dC  %d%%", st.indoor_temp_x10/10, st.indoor_temp_x10%10, st.indoor_hum);
