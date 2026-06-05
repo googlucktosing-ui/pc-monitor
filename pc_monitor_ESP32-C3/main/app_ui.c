@@ -940,25 +940,25 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
 
     /* === Bottom bar: single row, compact labels === */
     lv_obj_t *bot_card = lv_obj_create(parent);
-    lv_obj_set_size(bot_card, 224, 38);
+    lv_obj_set_size(bot_card, 224, 56);
     lv_obj_set_style_bg_color(bot_card, lv_color_hex(0x1A1A2E), 0);
     lv_obj_set_style_border_width(bot_card, 1, 0);
     lv_obj_set_style_border_color(bot_card, border_clr, 0);
     lv_obj_set_style_radius(bot_card, 3, 0);
-    lv_obj_set_style_pad_all(bot_card, 4, 0);
-    lv_obj_align(bot_card, LV_ALIGN_TOP_MID, 0, 202);
-    /* Left: GPU + value */
+    lv_obj_set_style_pad_all(bot_card, 6, 0);
+    lv_obj_align(bot_card, LV_ALIGN_TOP_MID, 0, 184);
+    /* Line 1: GPU + value */
     s_pc_cpu_bar = lv_label_create(bot_card);
     lv_label_set_text(s_pc_cpu_bar, "GPU:-- MHz");
     lv_obj_set_style_text_color(s_pc_cpu_bar, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_cpu_bar, &lv_font_montserrat_14, 0);
-    lv_obj_align(s_pc_cpu_bar, LV_ALIGN_TOP_LEFT, 4, 6);
-    /* Right: FAN + value */
+    lv_obj_align(s_pc_cpu_bar, LV_ALIGN_TOP_LEFT, 6, 4);
+    /* Line 2: FAN + value (below GPU) */
     s_pc_dht11_label = lv_label_create(bot_card);
     lv_label_set_text(s_pc_dht11_label, "FAN:---- RPM");
     lv_obj_set_style_text_color(s_pc_dht11_label, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_dht11_label, &lv_font_montserrat_14, 0);
-    lv_obj_align(s_pc_dht11_label, LV_ALIGN_TOP_RIGHT, -4, 6);
+    lv_obj_align_to(s_pc_dht11_label, s_pc_cpu_bar, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 2);
 }
 
 
@@ -1182,5 +1182,7 @@ void app_ui_start(void)
     xTaskCreatePinnedToCore(ui_task, "ui_task", 8192, NULL, 5, NULL, 0);
 
 }
+
+
 
 
