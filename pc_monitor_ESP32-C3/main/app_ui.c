@@ -947,22 +947,18 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_obj_set_style_radius(bot_card, 3, 0);
     lv_obj_set_style_pad_all(bot_card, 4, 0);
     lv_obj_align(bot_card, LV_ALIGN_TOP_MID, 0, 202);
-    /* Left half (50%): G: + value centered */
+    /* Left: GPU + value */
     s_pc_cpu_bar = lv_label_create(bot_card);
-    lv_label_set_text(s_pc_cpu_bar, "G:-- MHz");
+    lv_label_set_text(s_pc_cpu_bar, "GPU:-- MHz");
     lv_obj_set_style_text_color(s_pc_cpu_bar, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_cpu_bar, &lv_font_montserrat_14, 0);
-    lv_obj_set_width(s_pc_cpu_bar, 108);
-    lv_obj_set_style_text_align(s_pc_cpu_bar, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(s_pc_cpu_bar, LV_ALIGN_TOP_LEFT, 4, 6);
-    /* Right half (50%): F: + value centered */
+    /* Right: FAN + value */
     s_pc_dht11_label = lv_label_create(bot_card);
-    lv_label_set_text(s_pc_dht11_label, "F:---- RPM");
+    lv_label_set_text(s_pc_dht11_label, "FAN:---- RPM");
     lv_obj_set_style_text_color(s_pc_dht11_label, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_dht11_label, &lv_font_montserrat_14, 0);
-    lv_obj_set_width(s_pc_dht11_label, 108);
-    lv_obj_set_style_text_align(s_pc_dht11_label, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(s_pc_dht11_label, LV_ALIGN_TOP_LEFT, 112, 6);
+    lv_obj_align(s_pc_dht11_label, LV_ALIGN_TOP_RIGHT, -4, 6);
 }
 
 
@@ -1002,14 +998,14 @@ snprintf(buf, sizeof(buf), "%.0f", st.cpu_usage);
     /* Bottom bar: GPU value only (label separate) */
     if (st.pc_connected && st.gpu_name[0]!=0 && st.gpu_name[0]!='-') {
         float gclk = 800.0f + (st.gpu_usage / 100.0f) * 1200.0f;
-        snprintf(buf, sizeof(buf), "G:%.0f MHz", gclk);
-    } else { snprintf(buf, sizeof(buf), "G:-- MHz"); }
+        snprintf(buf, sizeof(buf), "GPU:%.0f MHz", gclk);
+    } else { snprintf(buf, sizeof(buf), "GPU:-- MHz"); }
     lv_label_set_text(s_pc_cpu_bar, buf);
-    /* Bottom bar: F: value */
+    /* Bottom bar: FAN value */
     if (st.cpu_temp > 0) {
         float rpm = 800.0f + (st.cpu_temp / 100.0f) * 2000.0f;
-        snprintf(buf, sizeof(buf), "F:%.0f RPM", rpm);
-    } else { snprintf(buf, sizeof(buf), "F:---- RPM"); }
+        snprintf(buf, sizeof(buf), "FAN:%.0f RPM", rpm);
+    } else { snprintf(buf, sizeof(buf), "FAN:---- RPM"); }
     lv_label_set_text(s_pc_dht11_label, buf);
     /* Top bar left: DHT11 data */
     if (st.sensor_valid) snprintf(buf, sizeof(buf), "%d.%dC  %d%%", st.indoor_temp_x10/10, st.indoor_temp_x10%10, st.indoor_hum);
