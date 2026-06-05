@@ -318,7 +318,62 @@ def _auto_start_lhm():
     log.warning("Failed to get LHM temperature sensors")
     return False
 
+def _gpu_from_wmi():
+    """Layer 1: Windows内置WMI (零依赖, Win10/11自带)"""
+    try:
+        import win32com.client
+        from collections import defaultdict
+        wmi = win32com.client.GetObject('winmgmts:{impersonationLevel=impersonate}!\\\\.\\root\\cimv2')
+        # GPU利用率
+        usage = 0.0
+        engines = wmi.ExecQuery('SELECT * FROM Win32_PerfFormattedData_GPUPerformanceCounters_GPUEngine')
+        phys_gpus = defaultdict(float)
+        for e in engines:
+            parts = e.Name.split('_')
+            phys_idx = ''
+            for i, p in enumerate(parts):
+                if p == 'phys' and i+1 < len(parts):
+                    phys_idx = parts[i+1]
+            val = float(e.UtilizationPercentage) if e.UtilizationPercentage else 0.0
+            key = f'GPU{phys_idx}'
+            phys_gpus[key] = max(phys_gpus[key], val)
+        if phys_gpus:
+            usage = max(phys_gpus.values())
+        # GPU型号
+        name = ''
+        for vc in wmi.ExecQuery('SELECT * FROM Win32_VideoController'):
+            if vc.Name and 'virtual' not in vc.Name.lower():
+                name = vc.Name
+                break
+        return (usage, 0.0, name)  # 温度需要在LHM中获取
+    except Exception:
+        return None
+
+def _gpu_from_lhm():
+    """Layer 2: LibreHardwareMonitor WMI (温度+详细信息)"""
+    try:
+        import win32com.client
+        wmi = win32com.client.GetObject('winmgmts:{impersonationLevel=impersonate}!\\\\.\\root\\LibreHardwareMonitor')
+        gt, gl, gn = 0.0, 0.0, ''
+        for s in wmi.ExecQuery('SELECT * FROM Sensor WHERE SensorType="Temperature"'):
+            if s.Name in ('GFX', 'GPU Core', 'GPU Temperature'):
+                gt = float(s.Value)
+                p = s.Parent.split('/')
+                if len(p) >= 2: gn = p[1]
+        for s in wmi.ExecQuery('SELECT * FROM Sensor WHERE SensorType="Load"'):
+            if s.Name in ('GFX', 'GPU Core', 'GPU Core'):
+                gl = float(s.Value)
+        if gt > 0 or gl > 0:
+            return (gl, gt, gn)
+    except Exception:
+        pass
+    return None
+
 def get_gpu():
+    """三层回退: GPUtil(独显) -> LHM(温度+负载) -> Windows WMI(利用率+型号)"""
+    lhm_data = None
+    wmi_data = None
+    # Layer 1: GPUtil (独显, 全数据)
     try:
         if _HAS_GPU:
             import GPUtil
@@ -328,23 +383,28 @@ def get_gpu():
                 return (g.load * 100, g.temperature, g.name)
     except Exception:
         pass
+    # Layer 2: LibreHardwareMonitor WMI (温度+负载, 集显/独显都支持)
     try:
-        import win32com.client
-        wmi_gpu = win32com.client.GetObject("winmgmts:{impersonationLevel=impersonate}!\\root\\LibreHardwareMonitor")
-        gt, gl, gn = 0.0, 0.0, ""
-        for s in wmi_gpu.ExecQuery("SELECT * FROM Sensor WHERE SensorType='Temperature'"):
-            if s.Name in ("GFX", "GPU Core"):
-                gt = s.Value
-                p = s.Parent.split('/')
-                if len(p) >= 2: gn = p[1]
-        for s in wmi_gpu.ExecQuery("SELECT * FROM Sensor WHERE SensorType='Load'"):
-            if s.Name in ("GFX", "GPU Core"):
-                gl = s.Value
-        if gt > 0 or gl > 0:
-            return (gl, gt, gn)
+        lhm_data = _gpu_from_lhm()
     except Exception:
         pass
-    return (0.0, 0.0, "")
+    # Layer 3: Windows内置WMI (利用率+型号, 零依赖Win10/11)
+    try:
+        wmi_data = _gpu_from_wmi()
+    except Exception:
+        pass
+    # 合并各层数据
+    usage = 0.0
+    temp = 0.0
+    name = ''
+    if lhm_data:
+        usage = lhm_data[0] if lhm_data[0] > 0 else (wmi_data[0] if wmi_data else 0.0)
+        temp = lhm_data[1]
+        name = lhm_data[2] if lhm_data[2] else (wmi_data[2] if wmi_data else '')
+    elif wmi_data:
+        usage = wmi_data[0]
+        name = wmi_data[2]
+    return (usage, temp, name)
 
 class Collector:
     def __init__(self):
@@ -481,6 +541,8 @@ class Collector:
 
     @staticmethod
     def get_gpu():
+        lhm_data = None
+        wmi_data = None
         try:
             if _HAS_GPU:
                 import GPUtil
@@ -491,22 +553,24 @@ class Collector:
         except Exception:
             pass
         try:
-            import win32com.client
-            wmi_gpu = win32com.client.GetObject("winmgmts:{impersonationLevel=impersonate}!\\root\\LibreHardwareMonitor")
-            gt, gl, gn = 0.0, 0.0, ""
-            for s in wmi_gpu.ExecQuery("SELECT * FROM Sensor WHERE SensorType='Temperature'"):
-                if s.Name in ("GFX", "GPU Core"):
-                    gt = s.Value
-                    p = s.Parent.split('/')
-                    if len(p) >= 2: gn = p[1]
-            for s in wmi_gpu.ExecQuery("SELECT * FROM Sensor WHERE SensorType='Load'"):
-                if s.Name in ("GFX", "GPU Core"):
-                    gl = s.Value
-            if gt > 0 or gl > 0:
-                return (gl, gt, gn)
+            lhm_data = _gpu_from_lhm()
         except Exception:
             pass
-        return (0.0, 0.0, "")
+        try:
+            wmi_data = _gpu_from_wmi()
+        except Exception:
+            pass
+        usage, temp, name = 0.0, 0.0, ''
+        if lhm_data:
+            usage = lhm_data[0] if lhm_data[0] > 0 else (wmi_data[0] if wmi_data else 0.0)
+            temp = lhm_data[1]
+            name = lhm_data[2] if lhm_data[2] else (wmi_data[2] if wmi_data else '')
+        elif wmi_data:
+            usage = wmi_data[0]
+            name = wmi_data[2]
+        return (usage, temp, name)
+
+
 
     def collect(self, use_gpu=True):
 
