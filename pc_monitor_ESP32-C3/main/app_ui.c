@@ -802,24 +802,43 @@ static bool s_show_weather_clock = true;  /* which page is visible */
 static void create_pc_monitor_hud(lv_obj_t *parent)
 {
     lv_obj_set_style_bg_color(parent, lv_color_hex(0x0A0A0A), 0);
+    lv_color_t border_clr = lv_color_hex(0x00E5FF);
+
+    /* === Top status bar: left | center | right === */
     s_pc_disk_bar = lv_label_create(parent);
     lv_label_set_text(s_pc_disk_bar, "--.-C  --%");
     lv_obj_set_style_text_color(s_pc_disk_bar, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_disk_bar, &lv_font_montserrat_14, 0);
-    lv_obj_align(s_pc_disk_bar, LV_ALIGN_TOP_LEFT, 6, 2);
-    s_pc_time_label = lv_label_create(parent);
-    lv_label_set_text(s_pc_time_label, "--:--");
-    lv_obj_set_style_text_color(s_pc_time_label, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_set_style_text_font(s_pc_time_label, &lv_font_montserrat_14, 0);
-    lv_obj_align(s_pc_time_label, LV_ALIGN_TOP_RIGHT, -8, 2);
-    s_pc_wifi_dot = status_dot_create(parent, 154, 5);
+    lv_obj_align(s_pc_disk_bar, LV_ALIGN_TOP_LEFT, 5, 2);
+    lv_obj_t *sep1 = lv_label_create(parent);
+    lv_label_set_text(sep1, "|");
+    lv_obj_set_style_text_color(sep1, lv_color_hex(0x555555), 0);
+    lv_obj_set_style_text_font(sep1, &lv_font_montserrat_14, 0);
+    lv_obj_align(sep1, LV_ALIGN_TOP_LEFT, 85, 2);
+    s_pc_wifi_dot = status_dot_create(parent, 98, 5);
     lv_obj_t *wl = lv_label_create(parent);
     lv_label_set_text(wl, "W");
     lv_obj_set_style_text_color(wl, lv_color_hex(0x9E9E9E), 0);
     lv_obj_set_style_text_font(wl, &lv_font_montserrat_14, 0);
     lv_obj_align_to(wl, s_pc_wifi_dot, LV_ALIGN_OUT_RIGHT_MID, 3, 0);
-    s_pc_pc_dot = status_dot_create(parent, 180, 5);
-    lv_color_t border_clr = lv_color_hex(0x00E5FF);
+    s_pc_pc_dot = status_dot_create(parent, 120, 5);
+    lv_obj_t *pl = lv_label_create(parent);
+    lv_label_set_text(pl, "P");
+    lv_obj_set_style_text_color(pl, lv_color_hex(0x9E9E9E), 0);
+    lv_obj_set_style_text_font(pl, &lv_font_montserrat_14, 0);
+    lv_obj_align_to(pl, s_pc_pc_dot, LV_ALIGN_OUT_RIGHT_MID, 3, 0);
+    lv_obj_t *sep2 = lv_label_create(parent);
+    lv_label_set_text(sep2, "|");
+    lv_obj_set_style_text_color(sep2, lv_color_hex(0x555555), 0);
+    lv_obj_set_style_text_font(sep2, &lv_font_montserrat_14, 0);
+    lv_obj_align(sep2, LV_ALIGN_TOP_LEFT, 150, 2);
+    s_pc_time_label = lv_label_create(parent);
+    lv_label_set_text(s_pc_time_label, "--:--");
+    lv_obj_set_style_text_color(s_pc_time_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_set_style_text_font(s_pc_time_label, &lv_font_montserrat_14, 0);
+    lv_obj_align(s_pc_time_label, LV_ALIGN_TOP_RIGHT, -5, 2);
+
+    /* === Row 1: FPS + CPU cards (h=84) === */
     lv_obj_t *fps_card = lv_obj_create(parent);
     lv_obj_set_size(fps_card, 115, 84);
     lv_obj_set_style_bg_color(fps_card, lv_color_hex(0x1A1A2E), 0);
@@ -827,7 +846,7 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_obj_set_style_border_color(fps_card, border_clr, 0);
     lv_obj_set_style_radius(fps_card, 3, 0);
     lv_obj_set_style_pad_all(fps_card, 0, 0);
-    lv_obj_align(fps_card, LV_ALIGN_TOP_LEFT, 5, 16);
+    lv_obj_align(fps_card, LV_ALIGN_TOP_LEFT, 5, 18);
     lv_obj_t *fps_title = lv_label_create(fps_card);
     lv_label_set_text(fps_title, "FPS");
     lv_obj_set_style_text_color(fps_title, lv_color_hex(0xFF6D00), 0);
@@ -838,6 +857,7 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_obj_set_style_text_color(s_pc_cpu_val, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_font(s_pc_cpu_val, &lv_font_montserrat_28, 0);
     lv_obj_align(s_pc_cpu_val, LV_ALIGN_TOP_LEFT, 8, 34);
+
     lv_obj_t *cpu_card = lv_obj_create(parent);
     lv_obj_set_size(cpu_card, 115, 84);
     lv_obj_set_style_bg_color(cpu_card, lv_color_hex(0x1A1A2E), 0);
@@ -845,35 +865,37 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_obj_set_style_border_color(cpu_card, border_clr, 0);
     lv_obj_set_style_radius(cpu_card, 3, 0);
     lv_obj_set_style_pad_all(cpu_card, 0, 0);
-    lv_obj_align(cpu_card, LV_ALIGN_TOP_RIGHT, -5, 16);
+    lv_obj_align(cpu_card, LV_ALIGN_TOP_RIGHT, -5, 18);
     lv_obj_t *ct_title = lv_label_create(cpu_card);
     lv_label_set_text(ct_title, "CPU TEMP");
     lv_obj_set_style_text_color(ct_title, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_font(ct_title, &lv_font_montserrat_14, 0);
-    lv_obj_align(ct_title, LV_ALIGN_TOP_LEFT, 8, 3);
+    lv_obj_align(ct_title, LV_ALIGN_TOP_LEFT, 8, 4);
     s_pc_gpu_title = lv_label_create(cpu_card);
     lv_label_set_text(s_pc_gpu_title, "--\302\260C");
     lv_obj_set_style_text_color(s_pc_gpu_title, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_gpu_title, &lv_font_montserrat_18, 0);
-    lv_obj_align(s_pc_gpu_title, LV_ALIGN_TOP_LEFT, 8, 22);
+    lv_obj_align(s_pc_gpu_title, LV_ALIGN_TOP_LEFT, 8, 24);
     lv_obj_t *cl_title = lv_label_create(cpu_card);
     lv_label_set_text(cl_title, "CPU LOAD");
     lv_obj_set_style_text_color(cl_title, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_font(cl_title, &lv_font_montserrat_14, 0);
-    lv_obj_align(cl_title, LV_ALIGN_TOP_LEFT, 8, 44);
+    lv_obj_align(cl_title, LV_ALIGN_TOP_LEFT, 8, 46);
     s_pc_mem_label = lv_label_create(cpu_card);
     lv_label_set_text(s_pc_mem_label, "--%");
     lv_obj_set_style_text_color(s_pc_mem_label, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_mem_label, &lv_font_montserrat_18, 0);
-    lv_obj_align(s_pc_mem_label, LV_ALIGN_TOP_LEFT, 8, 62);
+    lv_obj_align(s_pc_mem_label, LV_ALIGN_TOP_LEFT, 8, 64);
+
+    /* === Row 2: GPU TEMP | RAM USED | CPU CLOCK (h=96) === */
     lv_obj_t *gpu_card = lv_obj_create(parent);
-    lv_obj_set_size(gpu_card, 72, 94);
+    lv_obj_set_size(gpu_card, 72, 96);
     lv_obj_set_style_bg_color(gpu_card, lv_color_hex(0x1A1A2E), 0);
     lv_obj_set_style_border_width(gpu_card, 1, 0);
     lv_obj_set_style_border_color(gpu_card, border_clr, 0);
     lv_obj_set_style_radius(gpu_card, 3, 0);
     lv_obj_set_style_pad_all(gpu_card, 0, 0);
-    lv_obj_align(gpu_card, LV_ALIGN_TOP_LEFT, 5, 104);
+    lv_obj_align(gpu_card, LV_ALIGN_TOP_LEFT, 5, 106);
     lv_obj_t *gt_title = lv_label_create(gpu_card);
     lv_label_set_text(gt_title, "GPU\nTEMP");
     lv_obj_set_style_text_color(gt_title, lv_color_hex(0xFFFFFF), 0);
@@ -883,15 +905,16 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_label_set_text(s_pc_gpu_val, "--\302\260C");
     lv_obj_set_style_text_color(s_pc_gpu_val, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_gpu_val, &lv_font_montserrat_18, 0);
-    lv_obj_align(s_pc_gpu_val, LV_ALIGN_TOP_LEFT, 14, 62);
+    lv_obj_align(s_pc_gpu_val, LV_ALIGN_TOP_LEFT, 14, 66);
+
     lv_obj_t *ram_card = lv_obj_create(parent);
-    lv_obj_set_size(ram_card, 82, 94);
+    lv_obj_set_size(ram_card, 82, 96);
     lv_obj_set_style_bg_color(ram_card, lv_color_hex(0x1A1A2E), 0);
     lv_obj_set_style_border_width(ram_card, 1, 0);
     lv_obj_set_style_border_color(ram_card, border_clr, 0);
     lv_obj_set_style_radius(ram_card, 3, 0);
     lv_obj_set_style_pad_all(ram_card, 0, 0);
-    lv_obj_align(ram_card, LV_ALIGN_TOP_LEFT, 79, 104);
+    lv_obj_align(ram_card, LV_ALIGN_TOP_LEFT, 79, 106);
     lv_obj_t *ru_title = lv_label_create(ram_card);
     lv_label_set_text(ru_title, "RAM\nUSED");
     lv_obj_set_style_text_color(ru_title, lv_color_hex(0xFFFFFF), 0);
@@ -899,23 +922,24 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_obj_align(ru_title, LV_ALIGN_TOP_MID, 0, 5);
     s_pc_gpu_temp_label = lv_label_create(ram_card);
     lv_label_set_text(s_pc_gpu_temp_label, "--%");
-    lv_obj_set_style_text_color(s_pc_gpu_temp_label, lv_color_hex(0xBB86FC), 0);
+    lv_obj_set_style_text_color(s_pc_gpu_temp_label, lv_color_hex(0x00FFCC), 0);
     lv_obj_set_style_text_font(s_pc_gpu_temp_label, &lv_font_montserrat_18, 0);
     lv_obj_align(s_pc_gpu_temp_label, LV_ALIGN_TOP_MID, 0, 38);
-    s_pc_mem_bar = compact_bar_create(ram_card, 6, 62, 70, lv_color_hex(0xBB86FC));
+    s_pc_mem_bar = compact_bar_create(ram_card, 6, 60, 70, lv_color_hex(0x00FFCC));
     s_pc_net_label = lv_label_create(ram_card);
     lv_label_set_text(s_pc_net_label, "0.0/0.0G");
     lv_obj_set_style_text_color(s_pc_net_label, lv_color_hex(0x9E9E9E), 0);
     lv_obj_set_style_text_font(s_pc_net_label, &lv_font_montserrat_14, 0);
-    lv_obj_align(s_pc_net_label, LV_ALIGN_BOTTOM_MID, 0, -8);
+    lv_obj_align(s_pc_net_label, LV_ALIGN_BOTTOM_MID, 0, -6);
+
     lv_obj_t *clk_card = lv_obj_create(parent);
-    lv_obj_set_size(clk_card, 72, 94);
+    lv_obj_set_size(clk_card, 72, 96);
     lv_obj_set_style_bg_color(clk_card, lv_color_hex(0x1A1A2E), 0);
     lv_obj_set_style_border_width(clk_card, 1, 0);
     lv_obj_set_style_border_color(clk_card, border_clr, 0);
     lv_obj_set_style_radius(clk_card, 3, 0);
     lv_obj_set_style_pad_all(clk_card, 0, 0);
-    lv_obj_align(clk_card, LV_ALIGN_TOP_LEFT, 163, 104);
+    lv_obj_align(clk_card, LV_ALIGN_TOP_LEFT, 163, 106);
     lv_obj_t *cc_title = lv_label_create(clk_card);
     lv_label_set_text(cc_title, "CPU\nCLOCK");
     lv_obj_set_style_text_color(cc_title, lv_color_hex(0xFFFFFF), 0);
@@ -925,41 +949,49 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_label_set_text(s_pc_disk_label, "----");
     lv_obj_set_style_text_color(s_pc_disk_label, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_disk_label, &lv_font_montserrat_18, 0);
-    lv_obj_align(s_pc_disk_label, LV_ALIGN_TOP_LEFT, 14, 62);
+    lv_obj_align(s_pc_disk_label, LV_ALIGN_TOP_LEFT, 14, 66);
     lv_obj_t *mhz_lbl = lv_label_create(clk_card);
     lv_label_set_text(mhz_lbl, "MHz");
     lv_obj_set_style_text_color(mhz_lbl, lv_color_hex(0x9E9E9E), 0);
     lv_obj_set_style_text_font(mhz_lbl, &lv_font_montserrat_14, 0);
     lv_obj_align_to(mhz_lbl, s_pc_disk_label, LV_ALIGN_OUT_RIGHT_MID, 4, 0);
+
+    /* === Bottom bar: single row left-right split (h=36) === */
     lv_obj_t *bot_card = lv_obj_create(parent);
-    lv_obj_set_size(bot_card, 230, 38);
+    lv_obj_set_size(bot_card, 230, 36);
     lv_obj_set_style_bg_color(bot_card, lv_color_hex(0x1A1A2E), 0);
     lv_obj_set_style_border_width(bot_card, 1, 0);
     lv_obj_set_style_border_color(bot_card, border_clr, 0);
     lv_obj_set_style_radius(bot_card, 3, 0);
     lv_obj_set_style_pad_all(bot_card, 0, 0);
-    lv_obj_align(bot_card, LV_ALIGN_TOP_LEFT, 5, 202);
-    lv_obj_t *gc_lbl = lv_label_create(bot_card);
-    lv_label_set_text(gc_lbl, "GPU CLOCK");
-    lv_obj_set_style_text_color(gc_lbl, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_set_style_text_font(gc_lbl, &lv_font_montserrat_14, 0);
-    lv_obj_align(gc_lbl, LV_ALIGN_TOP_LEFT, 8, 3);
+    lv_obj_align(bot_card, LV_ALIGN_TOP_LEFT, 5, 204);
+    lv_obj_t *gc_label = lv_label_create(bot_card);
+    lv_label_set_text(gc_label, "GPU CLOCK");
+    lv_obj_set_style_text_color(gc_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_set_style_text_font(gc_label, &lv_font_montserrat_14, 0);
+    lv_obj_align(gc_label, LV_ALIGN_TOP_LEFT, 8, 10);
     s_pc_cpu_bar = lv_label_create(bot_card);
     lv_label_set_text(s_pc_cpu_bar, "-- MHz");
     lv_obj_set_style_text_color(s_pc_cpu_bar, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_cpu_bar, &lv_font_montserrat_14, 0);
-    lv_obj_align_to(s_pc_cpu_bar, gc_lbl, LV_ALIGN_OUT_RIGHT_MID, 4, 0);
-    lv_obj_t *fs_lbl = lv_label_create(bot_card);
-    lv_label_set_text(fs_lbl, "FAN SPEED");
-    lv_obj_set_style_text_color(fs_lbl, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_set_style_text_font(fs_lbl, &lv_font_montserrat_14, 0);
-    lv_obj_align(fs_lbl, LV_ALIGN_TOP_LEFT, 8, 21);
+    lv_obj_align_to(s_pc_cpu_bar, gc_label, LV_ALIGN_OUT_RIGHT_MID, 4, 0);
+    lv_obj_t *b_sep = lv_label_create(bot_card);
+    lv_label_set_text(b_sep, "|");
+    lv_obj_set_style_text_color(b_sep, lv_color_hex(0x555555), 0);
+    lv_obj_set_style_text_font(b_sep, &lv_font_montserrat_14, 0);
+    lv_obj_align(b_sep, LV_ALIGN_TOP_LEFT, 118, 10);
+    lv_obj_t *fs_label = lv_label_create(bot_card);
+    lv_label_set_text(fs_label, "FAN SPEED");
+    lv_obj_set_style_text_color(fs_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_set_style_text_font(fs_label, &lv_font_montserrat_14, 0);
+    lv_obj_align(fs_label, LV_ALIGN_TOP_LEFT, 126, 10);
     s_pc_dht11_label = lv_label_create(bot_card);
     lv_label_set_text(s_pc_dht11_label, "---- RPM");
     lv_obj_set_style_text_color(s_pc_dht11_label, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_dht11_label, &lv_font_montserrat_14, 0);
-    lv_obj_align_to(s_pc_dht11_label, fs_lbl, LV_ALIGN_OUT_RIGHT_MID, 4, 0);
+    lv_obj_align_to(s_pc_dht11_label, fs_label, LV_ALIGN_OUT_RIGHT_MID, 4, 0);
 }
+
 
 static void refresh_pc_monitor_hud(void)
 {
@@ -1007,6 +1039,7 @@ static void refresh_pc_monitor_hud(void)
     else snprintf(buf, sizeof(buf), "--.-C  --%%");
     lv_label_set_text(s_pc_disk_bar, buf);
 }
+
 static void create_pc_monitor_ui(lv_obj_t *parent) {
     if (s_theme_id == 1) { create_pc_monitor_hud(parent); return; }
     create_pc_monitor_classic(parent);
