@@ -810,10 +810,6 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_obj_set_style_text_color(s_pc_disk_bar, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_disk_bar, &lv_font_montserrat_14, 0);
     lv_obj_align(s_pc_disk_bar, LV_ALIGN_TOP_LEFT, 5, 2);
-    s_pc_wifi_dot = status_dot_create(parent, 105, 5);
-
-    s_pc_pc_dot = status_dot_create(parent, 125, 5);
-
     s_pc_time_label = lv_label_create(parent);
     lv_label_set_text(s_pc_time_label, "--:--");
     lv_obj_set_style_text_color(s_pc_time_label, lv_color_hex(0xFFFFFF), 0);
@@ -981,9 +977,7 @@ static void refresh_pc_monitor_hud(void)
     app_state_t st; char buf[64];
     app_state_get(&st);
     lv_label_set_text(s_pc_time_label, st.time_valid ? st.time_text : "--:--");
-    lv_obj_set_style_bg_color(s_pc_wifi_dot, st.wifi_connected ? lv_color_hex(0x00E5FF) : lv_color_hex(0x424242), 0);
-    lv_obj_set_style_bg_color(s_pc_pc_dot, st.pc_connected ? lv_color_hex(0x00E5FF) : lv_color_hex(0x424242), 0);
-    snprintf(buf, sizeof(buf), "%.0f", st.cpu_usage);
+snprintf(buf, sizeof(buf), "%.0f", st.cpu_usage);
     lv_label_set_text(s_pc_cpu_val, buf);
     if (st.pc_connected && st.gpu_name[0]!=0 && st.gpu_name[0]!='-')
         snprintf(buf, sizeof(buf), "GPU %.0f%%", st.gpu_usage);
