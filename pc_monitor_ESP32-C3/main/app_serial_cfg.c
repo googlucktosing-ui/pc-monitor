@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
@@ -80,19 +81,20 @@ void app_wifi_load_from_nvs(char *ssid_buf, size_t ssid_len,
 
 static void serial_cfg_task(void *arg)
 {
-    /* 禁用stdin缓冲，确保getchar()逐字符读取 */
-    setvbuf(stdin, NULL, _IONBF, 0);
-
     uint8_t buf[SERIAL_BUF_SIZE];
     size_t pos = 0;
 
-    ESP_LOGI(TAG, "Serial config listener started");
-    ESP_LOGI(TAG, "Send via USB: WIFI:SSID:PASSWORD to configure WiFi");
+    /* 重要: 不要直接调用uart_read_bytes或usb_serial_jtag_read_bytes
+       控制台底层已安装驱动，通过stdin读取即可 */
+    setvbuf(stdin, NULL, _IONBF, 0);
+
+    ESP_LOGI(TAG, "Serial config listener started (stdin mode)");
+    ESP_LOGI(TAG, "Send via serial: WIFI:SSID:PASSWORD to configure WiFi");
 
     while (1) {
-        int ch = fgetc(stdin);
+        int ch = getchar();
         if (ch == EOF) {
-            vTaskDelay(pdMS_TO_TICKS(10));
+            vTaskDelay(pdMS_TO_TICKS(50));
             continue;
         }
 
@@ -101,7 +103,7 @@ static void serial_cfg_task(void *arg)
         if (c == '\n' || c == '\r') {
             if (pos > 0) {
                 buf[pos] = 0;
-                ESP_LOGI(TAG, "Received: %s", (const char *)buf);
+                ESP_LOGI(TAG, "Received (%d bytes): %s", pos, (const char *)buf);
 
                 if (strncmp((const char *)buf, "WIFI:", 5) == 0) {
                     char *ssid = (char *)buf + 5;
@@ -112,8 +114,8 @@ static void serial_cfg_task(void *arg)
                             save_wifi_to_nvs(ssid, password);
                             printf("OK\n");
                             fflush(stdout);
-                            vTaskDelay(pdMS_TO_TICKS(100));
-                            ESP_LOGI(TAG, "Rebooting to apply new WiFi...");
+                            ESP_LOGI(TAG, "WiFi saved! Rebooting...");
+                            vTaskDelay(pdMS_TO_TICKS(200));
                             esp_restart();
                         } else {
                             printf("ERROR: empty\n");

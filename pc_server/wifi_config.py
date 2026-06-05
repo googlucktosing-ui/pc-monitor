@@ -236,3 +236,4 @@ def _close_dialog():
 if __name__ == '__main__':
     show_wifi_config()
 
+
