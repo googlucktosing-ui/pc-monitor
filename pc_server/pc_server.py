@@ -330,7 +330,7 @@ def get_gpu():
         pass
     try:
         import win32com.client
-        wmi_gpu = win32com.client.GetObject("winmgmts:{impersonationLevel=impersonate}!\\\\root\\\\LibreHardwareMonitor")
+        wmi_gpu = win32com.client.GetObject("winmgmts:{impersonationLevel=impersonate}!\\root\\LibreHardwareMonitor")
         gt, gl, gn = 0.0, 0.0, ""
         for s in wmi_gpu.ExecQuery("SELECT * FROM Sensor WHERE SensorType='Temperature'"):
             if s.Name in ("GFX", "GPU Core"):
@@ -492,7 +492,7 @@ class Collector:
             pass
         try:
             import win32com.client
-            wmi_gpu = win32com.client.GetObject("winmgmts:{impersonationLevel=impersonate}!\\\\root\\\\LibreHardwareMonitor")
+            wmi_gpu = win32com.client.GetObject("winmgmts:{impersonationLevel=impersonate}!\\root\\LibreHardwareMonitor")
             gt, gl, gn = 0.0, 0.0, ""
             for s in wmi_gpu.ExecQuery("SELECT * FROM Sensor WHERE SensorType='Temperature'"):
                 if s.Name in ("GFX", "GPU Core"):
