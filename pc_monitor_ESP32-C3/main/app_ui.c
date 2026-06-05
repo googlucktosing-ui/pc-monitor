@@ -838,7 +838,7 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_label_set_text(s_pc_cpu_val, "144");
     lv_obj_set_style_text_color(s_pc_cpu_val, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_font(s_pc_cpu_val, &lv_font_montserrat_28, 0);
-    lv_obj_align(s_pc_cpu_val, LV_ALIGN_TOP_LEFT, 8, 34);
+    lv_obj_align(s_pc_cpu_val, LV_ALIGN_TOP_LEFT, 8, 26);
 
     lv_obj_t *cpu_card = lv_obj_create(parent);
     lv_obj_set_size(cpu_card, 115, 84);
@@ -907,13 +907,9 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_label_set_text(s_pc_gpu_temp_label, "--%");
     lv_obj_set_style_text_color(s_pc_gpu_temp_label, lv_color_hex(0x00FFCC), 0);
     lv_obj_set_style_text_font(s_pc_gpu_temp_label, &lv_font_montserrat_18, 0);
-    lv_obj_align(s_pc_gpu_temp_label, LV_ALIGN_TOP_MID, 0, 30);
-    s_pc_mem_bar = compact_bar_create(ram_card, 6, 52, 70, lv_color_hex(0x00FFCC));
-    s_pc_net_label = lv_label_create(ram_card);
-    lv_label_set_text(s_pc_net_label, "0.0/0.0G");
-    lv_obj_set_style_text_color(s_pc_net_label, lv_color_hex(0x9E9E9E), 0);
-    lv_obj_set_style_text_font(s_pc_net_label, &lv_font_montserrat_14, 0);
-    lv_obj_align(s_pc_net_label, LV_ALIGN_BOTTOM_MID, 0, -4);
+    lv_obj_align(s_pc_gpu_temp_label, LV_ALIGN_TOP_MID, 0, 28);
+    s_pc_mem_bar = compact_bar_create(ram_card, 6, 50, 70, lv_color_hex(0x00FFCC));
+    lv_obj_set_height(s_pc_mem_bar, 14);
 
     /* CPU CLOCK card (right) */
     lv_obj_t *clk_card = lv_obj_create(parent);
@@ -950,18 +946,22 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_obj_set_style_radius(bot_card, 3, 0);
     lv_obj_set_style_pad_all(bot_card, 0, 0);
     lv_obj_align(bot_card, LV_ALIGN_TOP_LEFT, 5, 202);
-    /* Left: GPU: combined label+value */
+    /* Left half (50%): GPU centered */
     s_pc_cpu_bar = lv_label_create(bot_card);
     lv_label_set_text(s_pc_cpu_bar, "GPU:-- MHz");
     lv_obj_set_style_text_color(s_pc_cpu_bar, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_font(s_pc_cpu_bar, &lv_font_montserrat_14, 0);
-    lv_obj_align(s_pc_cpu_bar, LV_ALIGN_TOP_LEFT, 8, 10);
-    /* Right: FAN: combined label+value */
+    lv_obj_set_width(s_pc_cpu_bar, 115);
+    lv_obj_set_style_text_align(s_pc_cpu_bar, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(s_pc_cpu_bar, LV_ALIGN_TOP_LEFT, 0, 10);
+    /* Right half (50%): FAN centered */
     s_pc_dht11_label = lv_label_create(bot_card);
     lv_label_set_text(s_pc_dht11_label, "FAN:---- RPM");
     lv_obj_set_style_text_color(s_pc_dht11_label, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_dht11_label, &lv_font_montserrat_14, 0);
-    lv_obj_align(s_pc_dht11_label, LV_ALIGN_TOP_RIGHT, -6, 10);
+    lv_obj_set_width(s_pc_dht11_label, 115);
+    lv_obj_set_style_text_align(s_pc_dht11_label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(s_pc_dht11_label, LV_ALIGN_TOP_LEFT, 115, 10);
 }
 
 
@@ -992,9 +992,7 @@ static void refresh_pc_monitor_hud(void)
         lv_bar_set_value(s_pc_mem_bar, pct, LV_ANIM_OFF);
     } else { snprintf(buf, sizeof(buf), "--%%"); lv_bar_set_value(s_pc_mem_bar, 0, LV_ANIM_OFF); }
     lv_label_set_text(s_pc_gpu_temp_label, buf);
-    if (st.mem_total > 0) snprintf(buf, sizeof(buf), "%.1f/%.1fG", st.mem_used, st.mem_total);
-    else snprintf(buf, sizeof(buf), "--.-/--.-G");
-    lv_label_set_text(s_pc_net_label, buf);
+
     /* CPU CLOCK: value only (MHz is a separate label below) */
     float approx_mhz = 800.0f + (st.cpu_usage / 100.0f) * 3200.0f;
     snprintf(buf, sizeof(buf), "%.0f", approx_mhz);
