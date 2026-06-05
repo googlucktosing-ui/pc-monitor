@@ -1,4 +1,4 @@
-#include "app_serial_cfg.h"
+﻿#include "app_serial_cfg.h"
 #include "app_config.h"
 
 #include <stdio.h>
@@ -80,19 +80,23 @@ void app_wifi_load_from_nvs(char *ssid_buf, size_t ssid_len,
 
 static void serial_cfg_task(void *arg)
 {
+    /* 禁用stdin缓冲，确保getchar()逐字符读取 */
+    setvbuf(stdin, NULL, _IONBF, 0);
+
     uint8_t buf[SERIAL_BUF_SIZE];
     size_t pos = 0;
-    int c;
 
-    ESP_LOGI(TAG, "Serial config listener started (115200 baud)");
-    ESP_LOGI(TAG, "Send: WIFI:SSID:PASSWORD to configure WiFi");
+    ESP_LOGI(TAG, "Serial config listener started");
+    ESP_LOGI(TAG, "Send via USB: WIFI:SSID:PASSWORD to configure WiFi");
 
     while (1) {
-        c = getchar();
-        if (c == EOF) {
+        int ch = fgetc(stdin);
+        if (ch == EOF) {
             vTaskDelay(pdMS_TO_TICKS(10));
             continue;
         }
+
+        uint8_t c = (uint8_t)ch;
 
         if (c == '\n' || c == '\r') {
             if (pos > 0) {
@@ -107,22 +111,26 @@ static void serial_cfg_task(void *arg)
                         if (strlen(ssid) > 0 && strlen(password) > 0) {
                             save_wifi_to_nvs(ssid, password);
                             printf("OK\n");
+                            fflush(stdout);
                             vTaskDelay(pdMS_TO_TICKS(100));
                             ESP_LOGI(TAG, "Rebooting to apply new WiFi...");
                             esp_restart();
                         } else {
-                            printf("ERROR: empty ssid or password\n");
+                            printf("ERROR: empty\n");
+                            fflush(stdout);
                         }
                     } else {
-                        printf("ERROR: invalid format, expected WIFI:SSID:PASSWORD\n");
+                        printf("ERROR: need WIFI:S:P\n");
+                        fflush(stdout);
                     }
                 } else {
-                    printf("ERROR: unknown command\n");
+                    printf("ERROR: unknown\n");
+                    fflush(stdout);
                 }
                 pos = 0;
             }
         } else if (pos < SERIAL_BUF_SIZE - 1) {
-            buf[pos++] = (uint8_t)c;
+            buf[pos++] = c;
         }
     }
 }

@@ -1,4 +1,4 @@
-import sys, os, threading, tkinter as tk
+﻿import sys, os, threading, tkinter as tk
 from tkinter import ttk, messagebox
 import queue, time
 
@@ -235,3 +235,4 @@ def _close_dialog():
 
 if __name__ == '__main__':
     show_wifi_config()
+
