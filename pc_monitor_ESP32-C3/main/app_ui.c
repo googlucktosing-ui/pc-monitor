@@ -810,18 +810,10 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_obj_set_style_text_color(s_pc_disk_bar, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_disk_bar, &lv_font_montserrat_14, 0);
     lv_obj_align(s_pc_disk_bar, LV_ALIGN_TOP_LEFT, 5, 2);
-    s_pc_wifi_dot = status_dot_create(parent, 95, 5);
-    lv_obj_t *wl = lv_label_create(parent);
-    lv_label_set_text(wl, "W");
-    lv_obj_set_style_text_color(wl, lv_color_hex(0x9E9E9E), 0);
-    lv_obj_set_style_text_font(wl, &lv_font_montserrat_14, 0);
-    lv_obj_align_to(wl, s_pc_wifi_dot, LV_ALIGN_OUT_RIGHT_MID, 3, 0);
-    s_pc_pc_dot = status_dot_create(parent, 118, 5);
-    lv_obj_t *pl = lv_label_create(parent);
-    lv_label_set_text(pl, "P");
-    lv_obj_set_style_text_color(pl, lv_color_hex(0x9E9E9E), 0);
-    lv_obj_set_style_text_font(pl, &lv_font_montserrat_14, 0);
-    lv_obj_align_to(pl, s_pc_pc_dot, LV_ALIGN_OUT_RIGHT_MID, 3, 0);
+    s_pc_wifi_dot = status_dot_create(parent, 105, 5);
+
+    s_pc_pc_dot = status_dot_create(parent, 125, 5);
+
     s_pc_time_label = lv_label_create(parent);
     lv_label_set_text(s_pc_time_label, "--:--");
     lv_obj_set_style_text_color(s_pc_time_label, lv_color_hex(0xFFFFFF), 0);
@@ -937,22 +929,27 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_obj_set_style_text_color(cc_title, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_font(cc_title, &lv_font_montserrat_14, 0);
     lv_obj_align(cc_title, LV_ALIGN_TOP_MID, 0, 5);
-    /* Combined value + MHz in one label (no separate MHz label) */
+    /* Value (big) + MHz below (small) */
     s_pc_disk_label = lv_label_create(clk_card);
-    lv_label_set_text(s_pc_disk_label, "---- MHz");
+    lv_label_set_text(s_pc_disk_label, "----");
     lv_obj_set_style_text_color(s_pc_disk_label, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_disk_label, &lv_font_montserrat_18, 0);
-    lv_obj_align(s_pc_disk_label, LV_ALIGN_TOP_LEFT, 14, 66);
+    lv_obj_align(s_pc_disk_label, LV_ALIGN_TOP_LEFT, 8, 54);
+    lv_obj_t *mhz_lbl = lv_label_create(clk_card);
+    lv_label_set_text(mhz_lbl, "MHz");
+    lv_obj_set_style_text_color(mhz_lbl, lv_color_hex(0x9E9E9E), 0);
+    lv_obj_set_style_text_font(mhz_lbl, &lv_font_montserrat_14, 0);
+    lv_obj_align_to(mhz_lbl, s_pc_disk_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 1);
 
     /* === Bottom bar: single row, compact labels === */
     lv_obj_t *bot_card = lv_obj_create(parent);
-    lv_obj_set_size(bot_card, 230, 36);
+    lv_obj_set_size(bot_card, 230, 38);
     lv_obj_set_style_bg_color(bot_card, lv_color_hex(0x1A1A2E), 0);
     lv_obj_set_style_border_width(bot_card, 1, 0);
     lv_obj_set_style_border_color(bot_card, border_clr, 0);
     lv_obj_set_style_radius(bot_card, 3, 0);
     lv_obj_set_style_pad_all(bot_card, 0, 0);
-    lv_obj_align(bot_card, LV_ALIGN_TOP_LEFT, 5, 204);
+    lv_obj_align(bot_card, LV_ALIGN_TOP_LEFT, 5, 202);
     /* Left: GPU: combined label+value */
     s_pc_cpu_bar = lv_label_create(bot_card);
     lv_label_set_text(s_pc_cpu_bar, "GPU:-- MHz");
@@ -964,7 +961,7 @@ static void create_pc_monitor_hud(lv_obj_t *parent)
     lv_label_set_text(s_pc_dht11_label, "FAN:---- RPM");
     lv_obj_set_style_text_color(s_pc_dht11_label, lv_color_hex(0x00E5FF), 0);
     lv_obj_set_style_text_font(s_pc_dht11_label, &lv_font_montserrat_14, 0);
-    lv_obj_align(s_pc_dht11_label, LV_ALIGN_TOP_RIGHT, -8, 10);
+    lv_obj_align(s_pc_dht11_label, LV_ALIGN_TOP_RIGHT, -6, 10);
 }
 
 
@@ -998,9 +995,9 @@ static void refresh_pc_monitor_hud(void)
     if (st.mem_total > 0) snprintf(buf, sizeof(buf), "%.1f/%.1fG", st.mem_used, st.mem_total);
     else snprintf(buf, sizeof(buf), "--.-/--.-G");
     lv_label_set_text(s_pc_net_label, buf);
-    /* CPU CLOCK: value + MHz combined in one label */
+    /* CPU CLOCK: value only (MHz is a separate label below) */
     float approx_mhz = 800.0f + (st.cpu_usage / 100.0f) * 3200.0f;
-    snprintf(buf, sizeof(buf), "%.0f MHz", approx_mhz);
+    snprintf(buf, sizeof(buf), "%.0f", approx_mhz);
     lv_label_set_text(s_pc_disk_label, buf);
     /* Bottom bar: GPU: combined */
     if (st.pc_connected && st.gpu_name[0]!=0 && st.gpu_name[0]!='-') {
