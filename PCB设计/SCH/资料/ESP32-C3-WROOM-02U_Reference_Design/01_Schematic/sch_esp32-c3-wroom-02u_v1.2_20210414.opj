@@ -1,0 +1,38 @@
+(ExpressProject ""
+  (ProjectVersion "19981106")
+  (ProjectType "PCB")
+  (Folder "Design Resources"
+    (Folder "Library")
+    (File ".\sch_esp32-c3-wroom-02u_v1.2_20210414.dsn"
+      (Type "Schematic Design"))
+    (BuildFileAddedOrDeleted "x")
+    (CompileFileAddedOrDeleted "x")
+    (NoModify))
+  (Folder "Outputs")
+  (Folder "Referenced Projects")
+  (PartMRUSelector)
+  (GlobalState
+    (FileView
+      (Path "Design Resources")
+      (Path "Design Resources" ".\sch_esp32-c3-wroom-02u_v1.2_20210414.dsn")
+      (Path "Design Resources" ".\sch_esp32-c3-wroom-02u_v1.2_20210414.dsn"
+         "SCHEMATIC1")
+      (Select "Design Resources" ".\sch_esp32-c3-wroom-02u_v1.2_20210414.dsn"
+         "SCHEMATIC1" "02_ESP32-C3-WROOM-02U"))
+    (HierarchyView)
+    (Doc
+      (Type "COrCapturePMDoc")
+      (Frame
+        (Placement "44 2 3 -1 -1 -8 -31 0 200 0 380"))
+      (Tab 0))
+    (Doc
+      (Type "COrSchematicDoc")
+      (Frame
+        (Placement "44 0 1 -1 -1 -8 -31 156 1434 156 575")
+        (Scroll "-222 9")
+        (Zoom "68")
+        (Occurrence "/"))
+      (Path
+         "E:\CODEX-PJ\ESP32\PCB设计\SCH\资料\ESP32-C3-WROOM-02U_REFERENCE_DESIGN\01_SCHEMATIC\SCH_ESP32-C3-WROOM-02U_V1.2_20210414.DSN")
+      (Schematic "SCHEMATIC1")
+      (Page "02_ESP32-C3-WROOM-02U"))))

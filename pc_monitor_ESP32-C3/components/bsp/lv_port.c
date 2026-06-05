@@ -1,4 +1,4 @@
-﻿#include "freertos/FreeRTOS.h"
+#include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_err.h"
 #include "esp_log.h"
@@ -78,7 +78,7 @@ static void lcd_init(void)
     cfg.cs   = GPIO_NUM_5;
     cfg.dc   = GPIO_NUM_4;
     cfg.rst  = GPIO_NUM_10;
-    cfg.bl   = GPIO_NUM_2;
+    cfg.bl   = GPIO_NUM_0;
     cfg.spi_fre = 40 * 1000 * 1000;
     cfg.width   = LCD_WIDTH;
     cfg.height  = LCD_HEIGHT;
@@ -97,3 +97,4 @@ esp_err_t lv_port_init(void)
     lv_port_tick_init();
     return ESP_OK;
 }
+

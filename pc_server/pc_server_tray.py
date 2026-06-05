@@ -625,6 +625,7 @@ class TrayApp:
         self._disc_sock = None
         self._disc_thread = None
         self._discovery_addr = None
+        self._loop = None
         self._zeroconf = None
         self._mdns_service = None
         self._query_thread = None
@@ -820,6 +821,7 @@ class TrayApp:
         self._running = True
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+        self._loop = loop
         try:
             from pc_server import create_server
             self._server = create_server(host=self.host, port=self.port,
@@ -886,6 +888,28 @@ class TrayApp:
 
     # -- Tray menu ------------------------------------------------------
 
+
+    def send_theme(self, theme_id):
+        """Send theme switch command to all ESP32 clients."""
+        if not self._server or not self._loop:
+            log.warning("send_theme: server not ready")
+            return
+        try:
+            asyncio.run_coroutine_threadsafe(
+                self._server.send_cmd("theme", theme_id),
+                self._loop
+            )
+            names = ["经典", "游戏HUD"]
+            name = names[theme_id] if theme_id < len(names) else str(theme_id)
+            log.info(f"Theme switched to {name}")
+            if self._icon:
+                try:
+                    self._icon.notify(f"主题已切换: {name}", "PC Monitor")
+                except:
+                    pass
+        except Exception as e:
+            log.error(f"send_theme failed: {e}")
+
     def _build_menu(self):
         import pystray
         r = self._running
@@ -913,6 +937,10 @@ class TrayApp:
             pystray.MenuItem("Auto-start", self._toggle_autostart,
                 checked=lambda _: os.path.exists(_autostart_path())),
             pystray.Menu.SEPARATOR,
+            pystray.MenuItem("切换主题", pystray.Menu(
+                pystray.MenuItem("游戏HUD", lambda: self.send_theme(1)),
+                pystray.MenuItem("经典", lambda: self.send_theme(0)),
+                )),
             pystray.MenuItem("WiFi Config for ESP32",
                 lambda: self._show_wifi_config()),
             pystray.Menu.SEPARATOR,

@@ -17,6 +17,21 @@ static void handle_pc_data(const char *data, int len)
     cJSON *root = cJSON_ParseWithLength(data, len);
     if (!root) return;
 
+    /* Check for command message */
+    cJSON *cmd_item = cJSON_GetObjectItem(root, "cmd");
+    if (cJSON_IsString(cmd_item) && cmd_item->valuestring) {
+        if (strcmp(cmd_item->valuestring, "theme") == 0) {
+            cJSON *val = cJSON_GetObjectItem(root, "value");
+            if (cJSON_IsNumber(val)) {
+                int t = (int)val->valuedouble;
+                ESP_LOGI(TAG, "Theme switch: %d", t);
+                app_state_set_theme(t);
+            }
+        }
+        cJSON_Delete(root);
+        return;
+    }
+
     float cpu=0,gpu=0,gpu_temp=0,cpu_temp=0,mu=0,mt=0,du=0,dt=0,nu=0,nd=0;
     char hn[32]="PC",cn[48]="---",gn[48]="---",oi[48]="---";
     cJSON *i;

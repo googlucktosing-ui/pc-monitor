@@ -1,0 +1,9 @@
+下面也更新一下记忆，这个是比较重要
+现在有个两个软件工程，
+pc_server：PC端程序
+pc_monitor_ESP32-C3：ESP32端程序，源码管理在PC端，VM端用于编译，最终需同步PC管理源码
+VM工程项目编译路径一下：~/esp32/esp32-board
+
+ESP-IDF路径如下：~/esp32/esp-idf
+
+

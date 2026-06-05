@@ -98,3 +98,11 @@ void app_state_set_weather(const char *city, const char *weather, int temp, bool
         xSemaphoreGive(s_mutex);
     }
 }
+
+
+void app_state_set_theme(int theme)
+{
+    if (theme < 0) theme = 0;
+    if (theme > 1) theme = 1;
+    s_state.theme = theme;
+}

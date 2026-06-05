@@ -28,6 +28,7 @@ typedef struct {
     bool sensor_valid;
     bool wifi_connected;
     int outdoor_temp;
+    int theme;
     char weather_text[32];
     char city[32];
     bool weather_valid;
@@ -48,4 +49,5 @@ void app_state_set_sensor(int temp_x10, int hum, bool valid);
 void app_state_set_wifi(bool connected);
 void app_state_set_time(const char *time_text, const char *date, const char *weekday, bool valid);
 void app_state_set_weather(const char *city, const char *weather, int temp, bool valid);
+void app_state_set_theme(int theme);
 #endif

@@ -1,1 +1,0 @@
-https://docs.platformio.org/en/latest/boards/espressif32/esp32-c3-devkitm-1.html#espressif-esp32-c3-devkitm-1
