@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 
 
 
@@ -328,6 +328,22 @@ def get_gpu():
                 return (g.load * 100, g.temperature, g.name)
     except Exception:
         pass
+    try:
+        import win32com.client
+        wmi_gpu = win32com.client.GetObject("winmgmts:{impersonationLevel=impersonate}!\\\\root\\\\LibreHardwareMonitor")
+        gt, gl, gn = 0.0, 0.0, ""
+        for s in wmi_gpu.ExecQuery("SELECT * FROM Sensor WHERE SensorType='Temperature'"):
+            if s.Name in ("GFX", "GPU Core"):
+                gt = s.Value
+                p = s.Parent.split('/')
+                if len(p) >= 2: gn = p[1]
+        for s in wmi_gpu.ExecQuery("SELECT * FROM Sensor WHERE SensorType='Load'"):
+            if s.Name in ("GFX", "GPU Core"):
+                gl = s.Value
+        if gt > 0 or gl > 0:
+            return (gl, gt, gn)
+    except Exception:
+        pass
     return (0.0, 0.0, "")
 
 class Collector:
@@ -472,6 +488,22 @@ class Collector:
                 if gpus:
                     g = gpus[0]
                     return (g.load * 100, g.temperature, g.name)
+        except Exception:
+            pass
+        try:
+            import win32com.client
+            wmi_gpu = win32com.client.GetObject("winmgmts:{impersonationLevel=impersonate}!\\\\root\\\\LibreHardwareMonitor")
+            gt, gl, gn = 0.0, 0.0, ""
+            for s in wmi_gpu.ExecQuery("SELECT * FROM Sensor WHERE SensorType='Temperature'"):
+                if s.Name in ("GFX", "GPU Core"):
+                    gt = s.Value
+                    p = s.Parent.split('/')
+                    if len(p) >= 2: gn = p[1]
+            for s in wmi_gpu.ExecQuery("SELECT * FROM Sensor WHERE SensorType='Load'"):
+                if s.Name in ("GFX", "GPU Core"):
+                    gl = s.Value
+            if gt > 0 or gl > 0:
+                return (gl, gt, gn)
         except Exception:
             pass
         return (0.0, 0.0, "")
@@ -820,6 +852,22 @@ class Server:
 
 
 
+
+    
+
+    async def send_cmd(self, cmd, value):
+        """Send a command to all connected clients."""
+        if not self.clients:
+            return
+        data = {"cmd": cmd, "value": value}
+        msg = json.dumps(data)
+        dead = set()
+        for ws in self.clients:
+            try:
+                await ws.send(msg)
+            except Exception:
+                dead.add(ws)
+        self.clients -= dead
 
     async def run(self):
 
