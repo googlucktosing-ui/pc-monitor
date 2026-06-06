@@ -4,8 +4,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "driver/usb_serial_jtag.h"
 #include "esp_log.h"
 #include "esp_system.h"
 #include "nvs_flash.h"
@@ -79,56 +81,74 @@ void app_wifi_load_from_nvs(char *ssid_buf, size_t ssid_len,
     ESP_LOGI(TAG, "Loaded WiFi from NVS: ssid=%s", ssid_buf);
 }
 
+static void process_command(uint8_t *buf, size_t len)
+{
+    buf[len] = 0;
+    ESP_LOGI(TAG, "Received (%d bytes): %s", len, (const char *)buf);
+
+    if (strncmp((const char *)buf, "WIFI:", 5) == 0) {
+        char *ssid = (char *)buf + 5;
+        char *password = strchr(ssid, ':');
+        if (password) {
+            *password++ = 0;
+            if (strlen(ssid) > 0 && strlen(password) > 0) {
+                save_wifi_to_nvs(ssid, password);
+                printf("OK\n");
+                fflush(stdout);
+                ESP_LOGI(TAG, "WiFi saved! Rebooting...");
+                vTaskDelay(pdMS_TO_TICKS(200));
+                esp_restart();
+            } else {
+                printf("ERROR: empty\n");
+                fflush(stdout);
+            }
+        } else {
+            printf("ERROR: need WIFI:S:P\n");
+            fflush(stdout);
+        }
+    } else {
+        printf("ERROR: unknown\n");
+        fflush(stdout);
+    }
+}
+
 static void serial_cfg_task(void *arg)
 {
     uint8_t buf[SERIAL_BUF_SIZE];
     size_t pos = 0;
 
-    /* 重要: 不要直接调用uart_read_bytes或usb_serial_jtag_read_bytes
-       控制台底层已安装驱动，通过stdin读取即可 */
-    setvbuf(stdin, NULL, _IONBF, 0);
+    /* 设置stdin为非阻塞模式,这样getchar()无数据时立即返回EOF */
+    int flags = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK);
 
-    ESP_LOGI(TAG, "Serial config listener started (stdin mode)");
-    ESP_LOGI(TAG, "Send via serial: WIFI:SSID:PASSWORD to configure WiFi");
+    ESP_LOGI(TAG, "Serial config listener started (UART0+USB dual mode)");
+    ESP_LOGI(TAG, "Send: WIFI:SSID:PASSWORD via USB to configure WiFi");
 
     while (1) {
+        uint8_t c;
+        int got = 0;
+
+        /* 1) 从UART0(stdin)非阻塞读取 */
         int ch = getchar();
-        if (ch == EOF) {
-            vTaskDelay(pdMS_TO_TICKS(50));
+        if (ch != EOF) {
+            c = (uint8_t)ch;
+            got = 1;
+        }
+
+        /* 2) 若UART0无数据,从USB Serial/JTAG(原生USB)读 */
+        if (!got) {
+            int len = usb_serial_jtag_read_bytes(&c, 1, 0);
+            if (len > 0) got = 1;
+        }
+
+        if (!got) {
+            vTaskDelay(pdMS_TO_TICKS(20));
             continue;
         }
 
-        uint8_t c = (uint8_t)ch;
-
         if (c == '\n' || c == '\r') {
             if (pos > 0) {
-                buf[pos] = 0;
-                ESP_LOGI(TAG, "Received (%d bytes): %s", pos, (const char *)buf);
-
-                if (strncmp((const char *)buf, "WIFI:", 5) == 0) {
-                    char *ssid = (char *)buf + 5;
-                    char *password = strchr(ssid, ':');
-                    if (password) {
-                        *password++ = 0;
-                        if (strlen(ssid) > 0 && strlen(password) > 0) {
-                            save_wifi_to_nvs(ssid, password);
-                            printf("OK\n");
-                            fflush(stdout);
-                            ESP_LOGI(TAG, "WiFi saved! Rebooting...");
-                            vTaskDelay(pdMS_TO_TICKS(200));
-                            esp_restart();
-                        } else {
-                            printf("ERROR: empty\n");
-                            fflush(stdout);
-                        }
-                    } else {
-                        printf("ERROR: need WIFI:S:P\n");
-                        fflush(stdout);
-                    }
-                } else {
-                    printf("ERROR: unknown\n");
-                    fflush(stdout);
-                }
+                process_command(buf, pos);
                 pos = 0;
             }
         } else if (pos < SERIAL_BUF_SIZE - 1) {
