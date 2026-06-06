@@ -145,9 +145,17 @@ except ImportError:
 
 
 
+# -- CPU temp cache (PS LHM query is slow, cache for 8s) --
+_cpu_cache = {"val": 0.0, "time": 0.0, "ttl": 8.0}
+
+
 def get_cpu_temp():
+
     """Return CPU temperature in Celsius. Tries multiple methods, returns 0 if unavailable."""
-    import subprocess, platform as _platform
+    import subprocess, platform as _platform, time as _ctime
+    if _ctime.time() - _cpu_cache["time"] < _cpu_cache["ttl"] and _cpu_cache["val"] > 0:
+        return _cpu_cache["val"]
+
 
     # --- Method 1: MSAcpi_ThermalZoneTemperature (laptops) ---
     try:
@@ -182,7 +190,45 @@ def get_cpu_temp():
     except Exception:
         pass
 
-    # --- Method 3: LibreHardwareMonitor WMI ---
+                    # --- Method 3: LibreHardwareMonitor WMI via PowerShell (zero Python deps) ---
+    # Uses PowerShell Get-WmiObject with temp script file
+    try:
+        if _platform.system() == "Windows":
+            import tempfile, os as _os2
+            _pcmon_ps = """
+$s = Get-WmiObject -Namespace root/LibreHardwareMonitor -Class Sensor -Filter "SensorType='Temperature'" -ErrorAction SilentlyContinue
+foreach ($i in $s) {
+  if ($i.Name -like "*Tctl*" -or $i.Name -like "*Tdie*" -or $i.Name -like "*Package*") {
+    if ($i.Parent -like "*amdcpu*" -or $i.Parent -like "*intelcpu*") {
+      Write-Host $i.Value; exit 0
+    }
+  }
+}
+foreach ($i in $s) {
+  if ($i.Name -like "*Core*" -and ($i.Parent -like "*amdcpu*" -or $i.Parent -like "*intelcpu*")) {
+    Write-Host $i.Value; exit 0
+  }
+}
+foreach ($i in $s) {
+  if ($i.Value -gt 0) { Write-Host $i.Value; exit 0 }
+}
+"""
+            _pcmon_file = _os2.path.join(tempfile.gettempdir(), "_pcmon_cpu_temp.ps1")
+            with open(_pcmon_file, "w") as _f:
+                _f.write(_pcmon_ps.strip())
+            r = subprocess.run(
+                ["powershell", "-NoProfile", "-File", _pcmon_file],
+                capture_output=True, timeout=5, encoding="utf-8", errors="replace",
+                creationflags=subprocess.CREATE_NO_WINDOW)
+            out = r.stdout.strip()
+            if out:
+                val = float(out)
+                if 0 < val < 200:
+                    return round(val, 1)
+    except Exception:
+        pass
+
+# --- Method 4: win32com.client LHM WMI (fallback, needs pywin32) ---# --- Method 4: win32com.client LHM WMI (fallback, needs pywin32) ---
     try:
         import win32com.client
         wmi = win32com.client.GetObject("winmgmts:{impersonationLevel=impersonate}!\\root\\LibreHardwareMonitor")
@@ -222,8 +268,11 @@ def get_cpu_temp():
     except Exception:
         pass
 
-    return 0.0
-
+    import time as _ct2
+    _result = 0.0
+    _cpu_cache["val"] = _result
+    _cpu_cache["time"] = _ct2.time()
+    return _result
 
 
 
@@ -271,18 +320,18 @@ def _auto_start_lhm():
         except:
             return False
 
-    # Helper: check if LHM WMI actually returns sensors
+    # Helper: check if LHM WMI actually returns sensors (PowerShell, zero deps)
     def _lhm_wmi_works():
         try:
-            import win32com.client
-            wmi = win32com.client.GetObject(
-                "winmgmts:{impersonationLevel=impersonate}!\\root\\LibreHardwareMonitor")
-            sensors = wmi.ExecQuery("SELECT * FROM Sensor")
-            for _ in sensors:
-                return True  # at least one sensor
-            return False
+            r = subprocess.run(
+                ["powershell", "-NoProfile", "-Command",
+                 "Get-WmiObject -Namespace root/LibreHardwareMonitor -Class Sensor -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Name"],
+                capture_output=True, timeout=5, encoding="utf-8", errors="replace",
+                creationflags=subprocess.CREATE_NO_WINDOW)
+            return bool(r.stdout.strip())
         except:
             return False
+
 
     # Check if LHM is truly running (process + WMI)
     if _lhm_running() and _lhm_wmi_works():
@@ -349,11 +398,60 @@ def _gpu_from_wmi():
     except Exception:
         return None
 
+# -- GPU LHM cache --
+_gpu_lhm_cache = {"val": None, "time": 0.0, "ttl": 8.0}
+
+
 def _gpu_from_lhm():
-    """Layer 2: LibreHardwareMonitor WMI (温度+详细信息)"""
+
+    """Layer 2: LibreHardwareMonitor WMI (temperature + details)
+    Tries PowerShell Get-WmiObject first (built-in, no pywin32), then win32com fallback."""
+    import subprocess, platform as _platform, time as _gct
+    if _gct.time() - _gpu_lhm_cache["time"] < _gpu_lhm_cache["ttl"] and _gpu_lhm_cache["val"] is not None:
+        return _gpu_lhm_cache["val"]
+    try:
+        if _platform.system() == "Windows":
+            import tempfile, os as _gpu_os
+            _ps_script = """
+$s = Get-WmiObject -Namespace root/LibreHardwareMonitor -Class Sensor -Filter "SensorType='Temperature'" -ErrorAction SilentlyContinue
+foreach ($i in $s) {
+  if ($i.Name -eq "GFX" -and ($i.Parent -like "*gpu*" -or $i.Parent -like "*amdcpu*")) {
+    Write-Host ("T:" + $i.Value); exit 0
+  }
+}
+$s2 = Get-WmiObject -Namespace root/LibreHardwareMonitor -Class Sensor -Filter "SensorType='Load'" -ErrorAction SilentlyContinue
+foreach ($i in $s2) {
+  if ($i.Name -like "*GFX*" -and ($i.Parent -like "*gpu*" -or $i.Parent -like "*amdcpu*")) {
+    Write-Host ("L:" + $i.Value); exit 0
+  }
+}
+"""
+            _gpu_file = _gpu_os.path.join(tempfile.gettempdir(), "_pcmon_gpu_query.ps1")
+            with open(_gpu_file, "w") as _f:
+                _f.write(_ps_script.strip())
+            r = subprocess.run(
+                ["powershell", "-NoProfile", "-File", _gpu_file],
+                capture_output=True, timeout=5, encoding="utf-8", errors="replace",
+                creationflags=subprocess.CREATE_NO_WINDOW)
+            gt, gl = 0.0, 0.0
+            for line in r.stdout.strip().splitlines():
+                line = line.strip()
+                if line.startswith("T:"):
+                    gt = float(line[2:])
+                elif line.startswith("L:"):
+                    gl = float(line[2:])
+            if gt > 0 or gl > 0:
+                import time as _gct3
+                _gpu_lhm_cache["val"] = (gl, gt, "")
+                _gpu_lhm_cache["time"] = _gct3.time()
+                return (gl, gt, "")
+    except Exception:
+        pass
+
+    """Fallback: win32com.client LHM WMI"""
     try:
         import win32com.client
-        wmi = win32com.client.GetObject('winmgmts:{impersonationLevel=impersonate}!\\\\.\\root\\LibreHardwareMonitor')
+        wmi = win32com.client.GetObject('winmgmts:{impersonationLevel=impersonate}!\\.\\root\\LibreHardwareMonitor')
         gt, gl, gn = 0.0, 0.0, ''
         for s in wmi.ExecQuery('SELECT * FROM Sensor WHERE SensorType="Temperature"'):
             if s.Name in ('GFX', 'GPU Core', 'GPU Temperature'):
@@ -361,7 +459,7 @@ def _gpu_from_lhm():
                 p = s.Parent.split('/')
                 if len(p) >= 2: gn = p[1]
         for s in wmi.ExecQuery('SELECT * FROM Sensor WHERE SensorType="Load"'):
-            if s.Name in ('GFX', 'GPU Core', 'GPU Core'):
+            if s.Name in ('GFX', 'GPU Core'):
                 gl = float(s.Value)
         if gt > 0 or gl > 0:
             return (gl, gt, gn)
