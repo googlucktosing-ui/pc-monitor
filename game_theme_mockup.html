@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html>
+<head><style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#111;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:monospace}
+.phone{border:3px solid #333;border-radius:24px;padding:12px;background:#000;box-shadow:0 0 60px rgba(0,229,255,0.15)}
+.screen{width:480px;height:480px;background:#0B0E14;border-radius:12px;position:relative;overflow:hidden}
+.top-bar{position:absolute;top:8px;left:8px;right:8px;height:56px;background:#141B24;border-radius:8px;border:1px solid rgba(0,229,255,0.25);padding:6px 12px}
+.grid{position:absolute;top:0;left:0;right:0;bottom:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:24px 24px}
+.gauge-card{position:absolute;width:200px;height:200px;background:#141B24;border-radius:12px;border:1px solid #1E293B;top:80px}
+.gauge-left{left:24px}.gauge-right{right:24px}
+.gauge-svg{position:absolute;top:20px;left:10px;width:180px;height:140px}
+.gauge-val{position:absolute;text-align:center;width:100%;top:68px;color:#F1F5F9;font-size:36px;font-weight:bold}
+.gauge-label{position:absolute;text-align:center;width:100%;top:108px;color:#6B7280;font-size:12px}
+.gauge-freq{position:absolute;text-align:center;width:100%;top:148px;font-size:13px;font-weight:bold}
+.bottom-card{position:absolute;bottom:8px;left:8px;right:8px;height:36px;background:#141B24;border-radius:8px;border:1px solid rgba(0,229,255,0.12);padding:0 12px;display:flex;align-items:center;justify-content:space-between}
+.ram-card{position:absolute;bottom:52px;left:8px;right:8px;height:72px;background:#141B24;border-radius:8px;border:1px solid #1E293B;padding:6px 12px}
+.badge{position:absolute;bottom:2px;left:144px;right:144px;height:20px;background:rgba(179,136,255,0.12);border:1px solid rgba(179,136,255,0.18);border-radius:4px;text-align:center;color:#B388FF;font-size:10px;line-height:20px}
+.corner{position:absolute;width:10px;height:10px;border-color:rgba(0,229,255,0.4)}
+.corner-tl{top:0;left:0;border-top:2px solid;border-left:2px solid}
+.corner-tr{top:0;right:0;border-top:2px solid;border-right:2px solid}
+.corner-bl{bottom:0;left:0;border-bottom:2px solid;border-left:2px solid}
+.corner-br{bottom:0;right:0;border-bottom:2px solid;border-right:2px solid}
+</style></head>
+<body>
+<div class="phone"><div class="screen">
+<div class="grid"></div>
+<div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div><div class="corner corner-br"></div>
+
+<div class="top-bar" style="display:flex;justify-content:space-between;align-items:center">
+  <div><span style="color:#6B7280;font-size:10px">CPU TEMP</span><br><span style="color:#F1F5F9;font-size:20px;font-weight:bold">72°</span></div>
+  <div style="text-align:center"><span style="color:#6B7280;font-size:10px">GPU TEMP</span><br><span style="color:#B388FF;font-size:20px;font-weight:bold">68°</span></div>
+  <div style="text-align:right"><span style="color:#6B7280;font-size:10px">PERFORMANCE</span><br><span style="color:#00E676;font-size:20px;font-weight:bold">87%</span></div>
+</div>
+
+<div class="gauge-card gauge-left">
+  <svg class="gauge-svg" viewBox="0 0 180 140">
+    <path d="M 20 120 A 70 70 0 0 1 160 120" fill="none" stroke="#1E293B" stroke-width="14" stroke-linecap="round"/>
+    <path d="M 20 120 A 70 70 0 0 1 130 40" fill="none" stroke="url(#cpuGrad)" stroke-width="14" stroke-linecap="round"/>
+    <defs><linearGradient id="cpuGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#00E5FF"/><stop offset="100%" stop-color="#2979FF"/></linearGradient></defs>
+  </svg>
+  <div class="gauge-val">72%</div>
+  <div class="gauge-label">CPU</div>
+  <div class="gauge-freq" style="color:#00E5FF">4.2 GHz</div>
+</div>
+
+<div class="gauge-card gauge-right">
+  <svg class="gauge-svg" viewBox="0 0 180 140">
+    <path d="M 20 120 A 70 70 0 0 1 160 120" fill="none" stroke="#1E293B" stroke-width="14" stroke-linecap="round"/>
+    <path d="M 20 120 A 70 70 0 0 1 100 62" fill="none" stroke="url(#gpuGrad)" stroke-width="14" stroke-linecap="round"/>
+    <defs><linearGradient id="gpuGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#B388FF"/><stop offset="100%" stop-color="#7C4DFF"/></linearGradient></defs>
+  </svg>
+  <div class="gauge-val">45%</div>
+  <div class="gauge-label">GPU</div>
+  <div class="gauge-freq" style="color:#B388FF">1.8 GHz</div>
+</div>
+
+<div class="ram-card" style="display:flex;justify-content:space-between">
+  <div>
+    <span style="color:#6B7280;font-size:10px">RAM</span><br>
+    <span style="color:#F1F5F9;font-size:16px;font-weight:bold">16.0/32.0 GB</span><br>
+    <div style="width:200px;height:10px;background:#1E293B;border-radius:5px;margin-top:4px">
+      <div style="width:130px;height:10px;background:#00E676;border-radius:5px"></div>
+    </div>
+  </div>
+  <div style="text-align:right">
+    <span style="color:#6B7280;font-size:10px">NETWORK</span><br>
+    <span style="color:#00E5FF;font-size:13px;font-weight:bold">↓ 2.3 MB/s</span><br>
+    <span style="color:#FF9100;font-size:13px;font-weight:bold">↑ 0.5 MB/s</span>
+  </div>
+</div>
+
+<div class="bottom-bar" style="position:absolute;bottom:30px;left:8px;right:8px;height:20px;display:flex;justify-content:space-between;padding:0 12px">
+  <span style="color:#6B7280;font-size:10px">PC CONNECTED <span style="color:#00E676">●</span></span>
+  <span style="color:#6B7280;font-size:10px">DHT11  26.5°C  45%</span>
+  <span style="color:#6B7280;font-size:10px">GAME BOOST v1</span>
+</div>
+
+<div class="badge">NVIDIA RTX 3060</div>
+</div></div>
+</body></html>
