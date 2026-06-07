@@ -113,20 +113,20 @@ void game_theme_refresh(void)
     
     /* Network */
     if (st.pc_connected) {
-        snprintf(buf, sizeof(buf), "↓%.1f MB/s", st.net_down);
+        snprintf(buf, sizeof(buf), LV_SYMBOL_DOWNLOAD " %.1f MB/s", st.net_down);
         lv_label_set_text(ui_netdown, buf);
-        snprintf(buf, sizeof(buf), "↑%.1f MB/s", st.net_up);
+        snprintf(buf, sizeof(buf), LV_SYMBOL_UPLOAD " %.1f MB/s", st.net_up);
         lv_label_set_text(ui_netup, buf);
     } else {
-        lv_label_set_text(ui_netdown, "↓-- MB/s");
-        lv_label_set_text(ui_netup, "↑-- MB/s");
+        lv_label_set_text(ui_netdown, LV_SYMBOL_DOWNLOAD " -- MB/s");
+        lv_label_set_text(ui_netup, LV_SYMBOL_UPLOAD " -- MB/s");
     }
     
     /* Status */
     if (st.pc_connected) {
-        lv_label_set_text(ui_statusleft, "PC CONNECTED");
+        lv_label_set_text(ui_statusbar, "PC CONNECTED");
     } else {
-        lv_label_set_text(ui_statusleft, "WAITING...");
+        lv_label_set_text(ui_statusbar, "WAITING...");
     }
     
     if (st.sensor_valid) {
@@ -137,3 +137,4 @@ void game_theme_refresh(void)
         lv_label_set_text(ui_statusmid, "--.-°C --%");
     }
 }
+

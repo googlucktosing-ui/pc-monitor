@@ -37,9 +37,7 @@ extern lv_obj_t * ui_netdown;
 extern lv_obj_t * ui_netup;
 extern lv_obj_t * ui_rambar;
 extern lv_obj_t * ui_statusbar;
-extern lv_obj_t * ui_statusleft;
 extern lv_obj_t * ui_statusmid;
-extern lv_obj_t * ui_statusright;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus

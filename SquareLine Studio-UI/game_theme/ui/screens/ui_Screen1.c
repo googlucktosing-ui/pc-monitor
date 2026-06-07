@@ -29,9 +29,7 @@ lv_obj_t * ui_netdown = NULL;
 lv_obj_t * ui_netup = NULL;
 lv_obj_t * ui_rambar = NULL;
 lv_obj_t * ui_statusbar = NULL;
-lv_obj_t * ui_statusleft = NULL;
 lv_obj_t * ui_statusmid = NULL;
-lv_obj_t * ui_statusright = NULL;
 // event funtions
 
 // build funtions
@@ -63,7 +61,7 @@ void ui_Screen1_screen_init(void)
     lv_label_set_text(ui_cputemptitle, "CPU TEMP");
     lv_obj_set_style_text_color(ui_cputemptitle, lv_color_hex(0x6B7280), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_cputemptitle, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(ui_cputemptitle, &lv_font_montserrat_8, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_cputemptitle, &lv_font_montserrat_10, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_cputempval = lv_label_create(ui_TopBar);
     lv_obj_set_width(ui_cputempval, LV_SIZE_CONTENT);   /// 1
@@ -77,12 +75,12 @@ void ui_Screen1_screen_init(void)
     ui_gputemptitle = lv_label_create(ui_TopBar);
     lv_obj_set_width(ui_gputemptitle, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_gputemptitle, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_gputemptitle, 70);
+    lv_obj_set_x(ui_gputemptitle, 66);
     lv_obj_set_y(ui_gputemptitle, -8);
     lv_label_set_text(ui_gputemptitle, "GPU TEMP");
     lv_obj_set_style_text_color(ui_gputemptitle, lv_color_hex(0x6B7280), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_gputemptitle, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(ui_gputemptitle, &lv_font_montserrat_8, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_gputemptitle, &lv_font_montserrat_10, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_gputempval = lv_label_create(ui_TopBar);
     lv_obj_set_width(ui_gputempval, LV_SIZE_CONTENT);   /// 1
@@ -96,17 +94,17 @@ void ui_Screen1_screen_init(void)
     ui_perftitle = lv_label_create(ui_TopBar);
     lv_obj_set_width(ui_perftitle, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_perftitle, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_perftitle, 142);
+    lv_obj_set_x(ui_perftitle, 135);
     lv_obj_set_y(ui_perftitle, -8);
     lv_label_set_text(ui_perftitle, "PERFORMANCE");
     lv_obj_set_style_text_color(ui_perftitle, lv_color_hex(0x6B7280), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_perftitle, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(ui_perftitle, &lv_font_montserrat_8, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_perftitle, &lv_font_montserrat_10, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_perfval = lv_label_create(ui_TopBar);
     lv_obj_set_width(ui_perfval, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_perfval, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_perfval, 164);
+    lv_obj_set_x(ui_perfval, 161);
     lv_obj_set_y(ui_perfval, 14);
     lv_label_set_text(ui_perfval, "87%");
     lv_obj_set_style_text_color(ui_perfval, lv_color_hex(0x00E676), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -244,7 +242,7 @@ void ui_Screen1_screen_init(void)
     ui_netdown = lv_label_create(ui_infopanel);
     lv_obj_set_width(ui_netdown, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_netdown, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_netdown, 148);
+    lv_obj_set_x(ui_netdown, 138);
     lv_obj_set_y(ui_netdown, -9);
     lv_label_set_text(ui_netdown, "↓2.3 MB/s");
     lv_obj_set_style_text_color(ui_netdown, lv_color_hex(0x00E5FF), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -254,8 +252,8 @@ void ui_Screen1_screen_init(void)
     ui_netup = lv_label_create(ui_infopanel);
     lv_obj_set_width(ui_netup, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_netup, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_netup, 148);
-    lv_obj_set_y(ui_netup, 5);
+    lv_obj_set_x(ui_netup, 138);
+    lv_obj_set_y(ui_netup, 6);
     lv_label_set_text(ui_netup, "↑0.5 MB/s");
     lv_obj_set_style_text_color(ui_netup, lv_color_hex(0xFF9100), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_netup, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -274,9 +272,9 @@ void ui_Screen1_screen_init(void)
 
     ui_statusbar = lv_obj_create(ui_Screen1);
     lv_obj_set_width(ui_statusbar, 224);
-    lv_obj_set_height(ui_statusbar, 20);
+    lv_obj_set_height(ui_statusbar, 25);
     lv_obj_set_x(ui_statusbar, 7);
-    lv_obj_set_y(ui_statusbar, 217);
+    lv_obj_set_y(ui_statusbar, 213);
     lv_obj_clear_flag(ui_statusbar, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_style_radius(ui_statusbar, 4, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_statusbar, lv_color_hex(0x141B24), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -284,35 +282,15 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_style_border_color(ui_statusbar, lv_color_hex(0x1E293B), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_statusbar, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    ui_statusleft = lv_label_create(ui_statusbar);
-    lv_obj_set_width(ui_statusleft, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_statusleft, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_statusleft, -11);
-    lv_obj_set_y(ui_statusleft, -10);
-    lv_label_set_text(ui_statusleft, "PC CONNECTED");
-    lv_obj_set_style_text_color(ui_statusleft, lv_color_hex(0x6B7280), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_opa(ui_statusleft, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(ui_statusleft, &lv_font_montserrat_8, LV_PART_MAIN | LV_STATE_DEFAULT);
-
     ui_statusmid = lv_label_create(ui_statusbar);
     lv_obj_set_width(ui_statusmid, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_statusmid, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_statusmid, 69);
-    lv_obj_set_y(ui_statusmid, -10);
-    lv_label_set_text(ui_statusmid, "26.5°C 45%");
+    lv_obj_set_x(ui_statusmid, 43);
+    lv_obj_set_y(ui_statusmid, -8);
+    lv_label_set_text(ui_statusmid, "INDOOR:26.5°C 45%");
     lv_obj_set_style_text_color(ui_statusmid, lv_color_hex(0x6B7280), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_statusmid, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(ui_statusmid, &lv_font_montserrat_8, LV_PART_MAIN | LV_STATE_DEFAULT);
-
-    ui_statusright = lv_label_create(ui_statusbar);
-    lv_obj_set_width(ui_statusright, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_statusright, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_statusright, 133);
-    lv_obj_set_y(ui_statusright, -10);
-    lv_label_set_text(ui_statusright, "GAME BOOST v1");
-    lv_obj_set_style_text_color(ui_statusright, lv_color_hex(0x6B7280), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_opa(ui_statusright, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(ui_statusright, &lv_font_montserrat_8, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_statusmid, &lv_font_montserrat_10, LV_PART_MAIN | LV_STATE_DEFAULT);
 
 }
 
@@ -345,8 +323,6 @@ void ui_Screen1_screen_destroy(void)
     ui_netup = NULL;
     ui_rambar = NULL;
     ui_statusbar = NULL;
-    ui_statusleft = NULL;
     ui_statusmid = NULL;
-    ui_statusright = NULL;
 
 }
