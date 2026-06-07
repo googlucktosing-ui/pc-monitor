@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 
 
 
@@ -899,7 +899,7 @@ class TrayApp:
                 self._server.send_cmd("theme", theme_id),
                 self._loop
             )
-            names = ["经典", "游戏HUD", "游戏主题"]
+            names = ["经典", "游戏主题"]
             name = names[theme_id] if theme_id < len(names) else str(theme_id)
             log.info(f"Theme switched to {name}")
             if self._icon:
@@ -938,7 +938,6 @@ class TrayApp:
                 checked=lambda _: os.path.exists(_autostart_path())),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("切换主题", pystray.Menu(
-                pystray.MenuItem("游戏HUD", lambda: self.send_theme(1)),
                 pystray.MenuItem("经典", lambda: self.send_theme(0)),
                 pystray.MenuItem("游戏主题", lambda: self.send_theme(2)),
                 )),
@@ -1176,6 +1175,7 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         log.error(f"main() failed: {e}", exc_info=True)
+
 
 
 
