@@ -20,6 +20,7 @@
 #include "app_config.h"
 
 #include "app_state.h"
+#include "game_theme.h"
 
 
 
@@ -1016,11 +1017,16 @@ snprintf(buf, sizeof(buf), "%.0f", st.cpu_usage);
 
 static void create_pc_monitor_ui(lv_obj_t *parent) {
     if (s_theme_id == 1) { create_pc_monitor_hud(parent); return; }
+    if (s_theme_id == 2) {
+        lv_obj_add_flag(parent, LV_OBJ_FLAG_HIDDEN);
+        return;
+    }
     create_pc_monitor_classic(parent);
 }
 
 static void refresh_pc_monitor(void) {
     if (s_theme_id == 1) { refresh_pc_monitor_hud(); return; }
+    if (s_theme_id == 2) { game_theme_refresh(); return; }
     refresh_pc_monitor_classic();
 }
 
@@ -1119,7 +1125,14 @@ static void ui_refresh(void)
 
     /* Check for theme change */
     if (st.theme != s_theme_id) {
+        int old_theme = s_theme_id;
         s_theme_id = st.theme;
+        if (old_theme == 2) { game_theme_destroy(); }
+        if (s_theme_id == 2) {
+            lv_obj_clean(lv_scr_act());
+            game_theme_create();
+            return;
+        }
         lv_obj_clean(lv_scr_act());
         create_ui();
         return;

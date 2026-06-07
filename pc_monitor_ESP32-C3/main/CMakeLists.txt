@@ -11,6 +11,11 @@ idf_component_register(
         app_discovery.c
         app_serial_cfg.c
         dht11.c
+        game_theme.c
+        game_theme/ui.c
+        game_theme/ui_helpers.c
+        game_theme/screens/ui_Screen1.c
+        game_theme/components/ui_comp_hook.c
     INCLUDE_DIRS 
         .
         ../components/bsp
