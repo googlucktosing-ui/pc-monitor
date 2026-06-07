@@ -1192,7 +1192,7 @@ void app_ui_start(void)
 
 {
 
-    xTaskCreatePinnedToCore(ui_task, "ui_task", 8192, NULL, 5, NULL, 0);
+    xTaskCreatePinnedToCore(ui_task, "ui_task", 16384, NULL, 5, NULL, 0);
 
 }
 
