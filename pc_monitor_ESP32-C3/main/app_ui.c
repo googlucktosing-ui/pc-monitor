@@ -1,4 +1,4 @@
-﻿#include "app_ui.h"
+#include "app_ui.h"
 #include "esp_log.h"
 
 
@@ -24,7 +24,7 @@
 
 
 
-/* 锟斤拷锟斤拷 Screen dimensions 锟斤拷锟斤拷 */
+/* ���� Screen dimensions ���� */
 
 #define SCR_W 240
 
@@ -32,7 +32,7 @@
 
 
 
-/* 锟斤拷锟斤拷 Color palette 锟斤拷锟斤拷 */
+/* ���� Color palette ���� */
 
 #define CLR_BG       lv_color_hex(0x0F172A)
 
@@ -64,7 +64,7 @@
 
 
 
-/* 锟斤拷锟斤拷 Weather Clock widgets 锟斤拷锟斤拷 */
+/* ���� Weather Clock widgets ���� */
 
 static lv_obj_t *s_wc_cont;           /* container for whole weather clock */
 
@@ -83,7 +83,7 @@ static lv_obj_t *s_wc_weather;
 
 
 
-/* 锟斤拷锟斤拷 PC Monitor widgets 锟斤拷锟斤拷 */
+/* ���� PC Monitor widgets ���� */
 
 static lv_obj_t *s_pc_cont;           /* container for whole PC monitor */
 
@@ -118,11 +118,11 @@ static lv_obj_t *s_pc_dht11_label;
 /* Theme state */
 static int s_theme_id = 0;
 
-/* 锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋
+/* �T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T
 
-   锟斤拷锟斤拷 Weather Clock UI 锟斤拷锟斤拷
+   ���� Weather Clock UI ����
 
-   锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋 */
+   �T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T */
 
 
 
@@ -340,11 +340,11 @@ static void refresh_weather_clock_classic(void)
 
 
 
-/* 锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋
+/* �T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T
 
-   锟斤拷锟斤拷 PC Monitor UI 锟斤拷锟斤拷
+   ���� PC Monitor UI ����
 
-   锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋 */
+   �T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T */
 
 
 
@@ -400,7 +400,7 @@ static void create_pc_monitor_classic(lv_obj_t *parent)
 
 {
 
-    /* 锟斤拷锟斤拷 Top bar: time 锟斤拷锟斤拷 */
+    /* ���� Top bar: time ���� */
 
     s_pc_time_label = lv_label_create(parent);
 
@@ -444,7 +444,7 @@ static void create_pc_monitor_classic(lv_obj_t *parent)
 
 
 
-    /* 锟斤拷锟斤拷 Divider line 锟斤拷锟斤拷 */
+    /* ���� Divider line ���� */
 
     lv_obj_t *line = lv_obj_create(parent);
 
@@ -460,7 +460,7 @@ static void create_pc_monitor_classic(lv_obj_t *parent)
 
 
 
-    /* 锟斤拷锟斤拷 CPU Card 锟斤拷锟斤拷 */
+    /* ���� CPU Card ���� */
 
     lv_obj_t *cpu_card = lv_obj_create(parent);
 
@@ -518,7 +518,7 @@ static void create_pc_monitor_classic(lv_obj_t *parent)
 
 
 
-    /* 锟斤拷锟斤拷 GPU Card 锟斤拷锟斤拷 */
+    /* ���� GPU Card ���� */
 
     lv_obj_t *gpu_card = lv_obj_create(parent);
 
@@ -577,7 +577,7 @@ static void create_pc_monitor_classic(lv_obj_t *parent)
     
 
 
-    /* 锟斤拷锟斤拷 Memory section 锟斤拷锟斤拷 */
+    /* ���� Memory section ���� */
 
     s_pc_mem_label = lv_label_create(parent);
 
@@ -595,7 +595,7 @@ static void create_pc_monitor_classic(lv_obj_t *parent)
 
 
 
-    /* 锟斤拷锟斤拷 Disk section 锟斤拷锟斤拷 */
+    /* ���� Disk section ���� */
 
     s_pc_disk_label = lv_label_create(parent);
 
@@ -613,7 +613,7 @@ static void create_pc_monitor_classic(lv_obj_t *parent)
 
 
 
-    /* 锟斤拷锟斤拷 Network 锟斤拷锟斤拷 */
+    /* ���� Network ���� */
 
     s_pc_net_label = lv_label_create(parent);
 
@@ -787,11 +787,11 @@ static void refresh_pc_monitor_classic(void)
 
 
 
-/* 锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋
+/* �T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T
 
-   锟斤拷锟斤拷 Mode switching & main UI task 锟斤拷锟斤拷
+   ���� Mode switching & main UI task ����
 
-   锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋锟絋 */
+   �T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T */
 
 
 
@@ -1131,10 +1131,18 @@ static void ui_refresh(void)
         if (s_theme_id == 2) {
             lv_obj_clean(lv_scr_act());
             game_theme_create();
+            s_show_weather_clock = false;
             return;
         }
         lv_obj_clean(lv_scr_act());
         create_ui();
+        return;
+    }
+
+
+    /* In game theme mode, just refresh and skip auto-switch */
+    if (s_theme_id == 2) {
+        refresh_pc_monitor();
         return;
     }
 
@@ -1195,7 +1203,6 @@ void app_ui_start(void)
     xTaskCreatePinnedToCore(ui_task, "ui_task", 16384, NULL, 5, NULL, 0);
 
 }
-
 
 
 
