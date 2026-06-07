@@ -1,4 +1,4 @@
-﻿#include "app_state.h"
+#include "app_state.h"
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -103,6 +103,6 @@ void app_state_set_weather(const char *city, const char *weather, int temp, bool
 void app_state_set_theme(int theme)
 {
     if (theme < 0) theme = 0;
-    if (theme > 1) theme = 1;
+    if (theme != 0) theme = 2;
     s_state.theme = theme;
 }
