@@ -899,12 +899,12 @@ class TrayApp:
                 self._server.send_cmd("theme", theme_id),
                 self._loop
             )
-            names = ["¾­µä", "ÓÎÏ·HUD", "ÓÎÏ·Ö÷Ìâ"]
+            names = ["ç»å…¸", "æ¸¸æˆHUD", "æ¸¸æˆä¸»é¢˜"]
             name = names[theme_id] if theme_id < len(names) else str(theme_id)
             log.info(f"Theme switched to {name}")
             if self._icon:
                 try:
-                    self._icon.notify(f"Ö÷ÌâÒÑÇĞ»»: {name}", "PC Monitor")
+                    self._icon.notify(f"ä¸»é¢˜å·²åˆ‡æ¢: {name}", "PC Monitor")
                 except:
                     pass
         except Exception as e:
@@ -937,10 +937,10 @@ class TrayApp:
             pystray.MenuItem("Auto-start", self._toggle_autostart,
                 checked=lambda _: os.path.exists(_autostart_path())),
             pystray.Menu.SEPARATOR,
-            pystray.MenuItem("ÇĞ»»Ö÷Ìâ", pystray.Menu(
-                pystray.MenuItem("ÓÎÏ·HUD", lambda: self.send_theme(1)),
-                pystray.MenuItem("¾­µä", lambda: self.send_theme(0)),
-                pystray.MenuItem("ÓÎÏ·Ö÷Ìâ", lambda: self.send_theme(2)),
+            pystray.MenuItem("åˆ‡æ¢ä¸»é¢˜", pystray.Menu(
+                pystray.MenuItem("æ¸¸æˆHUD", lambda: self.send_theme(1)),
+                pystray.MenuItem("ç»å…¸", lambda: self.send_theme(0)),
+                pystray.MenuItem("æ¸¸æˆä¸»é¢˜", lambda: self.send_theme(2)),
                 )),
             pystray.MenuItem("WiFi Config for ESP32",
                 lambda: self._show_wifi_config()),
